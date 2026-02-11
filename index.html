@@ -3,138 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### Project</title> <!-- перед релизом ###### is Password -->
+    <title>Отсчет 10 дней</title>
     <style>
-        body {
-            background: #000;
-            color: #ff0000;
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #000;
+            color: #ff0000;
+            font-family: 'Arial', sans-serif;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            overflow: hidden;
         }
         
-        .countdown-container {
+        .container {
             text-align: center;
+            padding: 20px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
         
         .countdown {
-            font-size: 5rem;
+            font-size: 12rem;
             font-weight: bold;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
+            margin: 20px 0;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+            transition: all 0.3s ease;
         }
         
-        .unit {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 120px;
+        .days-label {
+            font-size: 2.5rem;
+            margin-top: 10px;
+            color: #cc0000;
         }
         
-        .value {
-            font-size: 6rem;
-            line-height: 1;
-            text-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+        .message {
+            font-size: 1.5rem;
+            margin-top: 40px;
+            opacity: 0.8;
+            max-width: 800px;
+            line-height: 1.5;
         }
         
-        .separator {
-            font-size: 4rem;
-            margin: 0 5px;
-            color: #990000;
+        .pulse {
+            animation: pulse 1.5s infinite;
         }
         
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Адаптивность для мобильных устройств */
         @media (max-width: 768px) {
-            .countdown {
-                font-size: 3rem;
-            }
-            
-            .value {
-                font-size: 4rem;
-            }
-            
-            .unit {
-                min-width: 80px;
-            }
-            
-            .separator {
-                font-size: 3rem;
-            }
+            h1 { font-size: 2rem; }
+            .countdown { font-size: 8rem; }
+            .days-label { font-size: 1.8rem; }
+            .message { font-size: 1.2rem; margin-top: 20px; }
         }
         
         @media (max-width: 480px) {
-            .countdown {
-                font-size: 2rem;
-                gap: 5px;
-            }
-            
-            .value {
-                font-size: 3rem;
-            }
-            
-            .unit {
-                min-width: 60px;
-            }
-            
-            .separator {
-                font-size: 2rem;
-            }
+            h1 { font-size: 1.5rem; }
+            .countdown { font-size: 5rem; }
+            .days-label { font-size: 1.2rem; }
+            .message { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="countdown-container">
-        <div class="countdown" id="countdown">
-            <!-- Будет заполнено скриптом -->
-        </div>
+    <div class="container">
+        <h1>Отсчет до события</h1>
+        <div class="countdown" id="countdown">10</div>
+        <div class="days-label">дней</div>
+        <div class="message" id="message">Осталось всего 10 дней до важного события. Каждый день приближает нас к цели!</div>
     </div>
 
     <script>
-        // Устанавливаем конечную дату (через 10 дней)
-        const endDate = new Date();
-        endDate.setDate(endDate.getDate() + 10);
-        endDate.setHours(0, 0, 0, 0); // Устанавливаем на полночь
+        // Начальное значение отсчета
+        let daysLeft = 10;
         
+        // Элементы DOM
+        const countdownElement = document.getElementById('countdown');
+        const messageElement = document.getElementById('message');
+        
+        // Сообщения для разных значений отсчета
+        const messages = {
+            10: "Осталось всего 10 дней до важного события. Каждый день приближает нас к цели!",
+            9: "Осталось 9 дней. Подготовка в самом разгаре!",
+            8: "Осталось 8 дней. Уверенно движемся вперед!",
+            7: "Неделя осталась! 7 дней и событие наступит.",
+            6: "Осталось 6 дней. Время летит незаметно!",
+            5: "Всего 5 дней осталось! Полпути уже пройдено.",
+            4: "Осталось 4 дня. Приготовления на финишной прямой!",
+            3: "Три дня! Совсем скоро всё начнется.",
+            2: "Осталось всего 2 дня. Завершающие приготовления!",
+            1: "Последний день ожидания! Завтра всё случится.",
+            0: "День настал! Событие происходит сегодня!"
+        };
+        
+        // Функция обновления отсчета
         function updateCountdown() {
-            const now = new Date();
-            const timeLeft = endDate - now;
+            countdownElement.textContent = daysLeft;
+            messageElement.textContent = messages[daysLeft] || "Отсчет завершен!";
             
-            // Рассчитываем дни, часы, минуты, секунды
-            const days = Math.max(0, Math.floor(timeLeft / (1000 * 60 * 60 * 24)));
-            const hours = Math.max(0, Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
-            const minutes = Math.max(0, Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)));
-            const seconds = Math.max(0, Math.floor((timeLeft % (1000 * 60)) / 1000));
+            // Добавляем пульсацию для последних 3 дней
+            if (daysLeft <= 3) {
+                countdownElement.classList.add('pulse');
+            } else {
+                countdownElement.classList.remove('pulse');
+            }
             
-            // Получаем контейнер для отсчета
-            const countdownElement = document.getElementById('countdown');
-            
-            // Обновляем отображение
-            countdownElement.innerHTML = `
-                <div class="unit">
-                    <div class="value">${days.toString().padStart(2, '0')}</div>
-                </div>
-                <div class="separator">:</div>
-                <div class="unit">
-                    <div class="value">${hours.toString().padStart(2, '0')}</div>
-                </div>
-                <div class="separator">:</div>
-                <div class="unit">
-                    <div class="value">${minutes.toString().padStart(2, '0')}</div>
-                </div>
-                <div class="separator">:</div>
-                <div class="unit">
-                    <div class="value">${seconds.toString().padStart(2, '0')}</div>
-                </div>
-            `;
+            // Если отсчет не закончен, уменьшаем дни
+            if (daysLeft > 0) {
+                daysLeft--;
+            }
         }
         
-        // Обновляем каждую секунду
-        setInterval(updateCountdown, 1000);
-        updateCountdown(); // Первый запуск
+        // Обновляем отсчет каждые 24 часа (в демо-версии - каждые 10 секунд)
+        // В реальном использовании заменить 10000 на 86400000 (24 часа)
+        setInterval(updateCountdown, 10000);
+        
+        // Инициализация при загрузке
+        updateCountdown();
     </script>
 </body>
 </html>
