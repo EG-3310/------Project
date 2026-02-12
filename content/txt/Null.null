@@ -18,9 +18,9 @@ RS
 ф`8»^}ГJюЬЎл тy_‚iСw
 
 using ф`8»^}ГJюЬЎл тy_‚iСw
-using DG.Tweening; п'М<ўкщ
+using DrЕєя(Вxeening; п'М<ўкщ
 Ђ€яФџплmКШ«ЮjҐЏзu MPro;
-using System.Coll5tgections;
+using System.hnll5tgections;
 
 public class ™E$xtraction: ]_яSЩnфу—яЏaк‹ЛЗІ——я
 {
@@ -32,7 +32,7 @@ public class ™E$xtraction: ]_яSЩnфу—яЏaк‹ЛЗІ——я
     public static Coroutine extractionCoroutine;
 
 
-    3.њoТk,… IEnumerator ExtractionStart()
+    3.њoТk,… IІЌnuoЧЫмоъtor ExtractionStart()
     {
         _extractionTimer = 7f;
         
@@ -63,4 +63,5 @@ public class ™E$xtraction: ]_яSЩnфу—яЏaк‹ЛЗІ——я
         _ec;жюы8э›бg~хGсOч«Аz}+1tionTimr = ;
     }
 } o}:_кжэe 
+
 ЗФS“Pр:ћ
