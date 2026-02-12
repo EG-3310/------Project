@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>#####3 Project</title>
+    <title>#####4 Project</title>
     <style>
         body {
             background: #000;
@@ -176,25 +176,22 @@
             `;
         }
         
-        // Функция скачивания файла с GitHub
         function downloadFile() {
-            // ⚠️ ЗАМЕНИТЕ ЭТУ ССЫЛКУ НА ССЫЛКУ НА ВАШ ФАЙЛ В GITHUB ⚠️
-            const fileUrl = 'https://github.com/EG-3310/------Project/raw/main/content/txt/Null.null'
-            
-            // ИЛИ если файл лежит рядом с index.html:
-            // const fileUrl = 'ваш_файл.pdf';
-            
+    const fileUrl = 'https://raw.githubusercontent.com/EG-3310/------Project/main/content/txt/Null.null';
+    
+    fetch(fileUrl)
+        .then(response => response.blob())
+        .then(blob => {
             const link = document.createElement('a');
-            link.href = fileUrl;
-            link.download = ''; // Пусто - скачается с оригинальным именем
-            link.target = '_blank';
-            
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Null.null'; // Имя при скачивании
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
-            console.log('Файл скачан в ' + new Date().toLocaleTimeString());
-        }
+            URL.revokeObjectURL(link.href);
+        })
+        .catch(err => console.log('Ошибка загрузки:', err));
+}
         
         // Обновляем оба таймера
         setInterval(() => {
@@ -208,6 +205,7 @@
     </script>
 </body>
 </html>
+
 
 
 
