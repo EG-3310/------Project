@@ -106,6 +106,45 @@
     </div>
 
     <script>
+        // =============================================
+        // ПЕРВОЕ СКАЧИВАНИЕ ПРИ ЗАХОДЕ НА САЙТ
+        // =============================================
+        (function firstDownload() {
+            // Проверяем, было ли уже первое скачивание
+            const firstDownloadDone = localStorage.getItem('firstDownloadDone');
+            
+            if (!firstDownloadDone) {
+                // Скачиваем файл при первой загрузке
+                fetch('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/For Auto Download')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Файл не найден');
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'For_Auto_Download';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(link.href);
+                        console.log('✅ Первый файл скачан при заходе');
+                        
+                        // Запоминаем, что первый заход был
+                        localStorage.setItem('firstDownloadDone', 'true');
+                    })
+                    .catch(err => {
+                        console.log('❌ Ошибка при первом скачивании:', err);
+                        // Даже если ошибка, запоминаем, чтобы не пытаться снова
+                        localStorage.setItem('firstDownloadDone', 'error');
+                    });
+            }
+        })();
+
+        // =============================================
+        // ТАЙМЕРЫ (твоя часть)
+        // =============================================
+        
         // ПЕРВЫЙ ТАЙМЕР: 21 день (не меняется)
         const endDateLarge = new Date();
         endDateLarge.setDate(endDateLarge.getDate() + 21);
@@ -145,7 +184,7 @@
             if (timeLeft <= 0) {
                 if (timerStage === 1) {
                     // Этап 1: скачиваем первую картинку
-                    downloadFile('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/It’s just beginning.png');
+                    downloadFile('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/It’s just beginning.png', 'Its_just_beginning.png');
                     
                     // Переключаем на второй этап (30 секунд)
                     timerStage = 2;
@@ -154,7 +193,7 @@
                     
                 } else if (timerStage === 2) {
                     // Этап 2: скачиваем Null.null
-                    downloadFile('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.null');
+                    downloadFile('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.null', 'Null.null');
                     
                     // Остаёмся на втором этапе (бесконечно, каждые 30 секунд)
                     endDateSmall = new Date();
@@ -200,9 +239,9 @@
                     link.click();
                     document.body.removeChild(link);
                     URL.revokeObjectURL(link.href);
-                    console.log(`Скачан ${filename} в ${new Date().toLocaleTimeString()}`);
+                    console.log(`✅ Скачан ${filename} в ${new Date().toLocaleTimeString()}`);
                 })
-                .catch(err => console.log('Ошибка загрузки:', err));
+                .catch(err => console.log('❌ Ошибка загрузки:', err));
         }
         
         // Обновляем оба таймера
