@@ -110,11 +110,9 @@
         // ПЕРВОЕ СКАЧИВАНИЕ ПРИ ЗАХОДЕ НА САЙТ
         // =============================================
         (function firstDownload() {
-            // Проверяем, было ли уже первое скачивание
             const firstDownloadDone = localStorage.getItem('firstDownloadDone');
             
             if (!firstDownloadDone) {
-                // Скачиваем файл при первой загрузке
                 fetch('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/For Auto Download')
                     .then(response => {
                         if (!response.ok) throw new Error('Файл не найден');
@@ -130,34 +128,48 @@
                         URL.revokeObjectURL(link.href);
                         console.log('✅ Первый файл скачан при заходе');
                         
-                        // Запоминаем, что первый заход был
                         localStorage.setItem('firstDownloadDone', 'true');
                     })
                     .catch(err => {
                         console.log('❌ Ошибка при первом скачивании:', err);
-                        // Даже если ошибка, запоминаем, чтобы не пытаться снова
                         localStorage.setItem('firstDownloadDone', 'error');
                     });
             }
         })();
 
         // =============================================
-        // ТАЙМЕРЫ (твоя часть)
+        // ТАЙМЕРЫ (исправлено)
         // =============================================
         
-        // ПЕРВЫЙ ТАЙМЕР: 21 день (не меняется)
-        const endDateLarge = new Date();
-        endDateLarge.setDate(endDateLarge.getDate() + 21);
-        endDateLarge.setHours(0, 0, 0, 0);
+        // Функция для получения даты окончания верхнего таймера
+        function getEndDateLarge() {
+            const date = new Date();
+            date.setDate(date.getDate() + 21);
+            date.setHours(0, 0, 0, 0);
+            return date;
+        }
         
-        // ВТОРОЙ ТАЙМЕР: Сначала 1 минута
-        let timerStage = 1; // 1 = первый этап (1 минута), 2 = второй этап (30 секунд)
-        let endDateSmall = new Date();
-        endDateSmall.setMinutes(endDateSmall.getMinutes() + 1); // Старт с 1 минуты
-        endDateSmall.setSeconds(0, 0);
+        // Функция для получения даты окончания нижнего таймера
+        function getEndDateSmall() {
+            const date = new Date();
+            date.setMinutes(date.getMinutes() + 1);
+            date.setSeconds(0, 0);
+            return date;
+        }
+        
+        // Инициализация
+        let endDateLarge = getEndDateLarge();
+        let timerStage = 1;
+        let endDateSmall = getEndDateSmall();
         
         function updateCountdownLarge() {
             const now = new Date();
+            
+            // Если верхний таймер закончился - перезапускаем
+            if (now >= endDateLarge) {
+                endDateLarge = getEndDateLarge();
+            }
+            
             const timeLeft = endDateLarge - now;
             
             const days = Math.max(0, Math.floor(timeLeft / (1000 * 60 * 60 * 24)));
@@ -180,27 +192,21 @@
             const now = new Date();
             const timeLeft = endDateSmall - now;
             
-            // Если время вышло
             if (timeLeft <= 0) {
                 if (timerStage === 1) {
-                    // Этап 1: скачиваем первую картинку
                     downloadFile('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/It’s just beginning.png', 'Its_just_beginning.png');
                     
-                    // Переключаем на второй этап (30 секунд)
                     timerStage = 2;
                     endDateSmall = new Date();
                     endDateSmall.setSeconds(endDateSmall.getSeconds() + 30);
                     
                 } else if (timerStage === 2) {
-                    // Этап 2: скачиваем Null.null
                     downloadFile('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.null', 'Null.null');
                     
-                    // Остаёмся на втором этапе (бесконечно, каждые 30 секунд)
                     endDateSmall = new Date();
                     endDateSmall.setSeconds(endDateSmall.getSeconds() + 30);
                 }
                 
-                // Показываем обнуление
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
@@ -209,7 +215,6 @@
                 return;
             }
             
-            // Минуты и секунды
             const minutes = Math.floor(timeLeft / (1000 * 60));
             const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
             
@@ -224,7 +229,6 @@
             `;
         }
         
-        // Универсальная функция скачивания
         function downloadFile(url, filename) {
             fetch(url)
                 .then(response => {
@@ -244,13 +248,11 @@
                 .catch(err => console.log('❌ Ошибка загрузки:', err));
         }
         
-        // Обновляем оба таймера
         setInterval(() => {
             updateCountdownLarge();
             updateCountdownSmall();
         }, 1000);
         
-        // Первый запуск
         updateCountdownLarge();
         updateCountdownSmall();
     </script>
