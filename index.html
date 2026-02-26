@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 12 Project</title>
+    <title>##### 13 Project</title>
     <style>
         body {
             background: #000;
@@ -95,7 +95,7 @@
     </style>
 </head>
 <body>
-    <!-- Первый таймер: 21 день -->
+    <!-- Первый таймер: 22 дня -->
     <div class="countdown-container">
         <div class="countdown-large" id="countdown-large"></div>
     </div>
@@ -144,7 +144,7 @@
         // Функция для получения даты окончания верхнего таймера
         function getEndDateLarge(now) {
             const date = new Date(now);
-            date.setDate(date.getDate() + 21);
+            date.setDate(date.getDate() + 22); // ИЗМЕНЕНО: теперь 22 дня
             date.setHours(0, 0, 0, 0);
             return date;
         }
