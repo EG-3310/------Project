@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 15 Project</title>
+    <title>##### 1 6 Project</title>
     <style>
         body {
             background: #000;
@@ -95,7 +95,7 @@
     </style>
 </head>
 <body>
-    <!-- Первый таймер: 22 дня (изменено) -->
+    <!-- Первый таймер: 22 дня -->
     <div class="countdown-container">
         <div class="countdown-large" id="countdown-large"></div>
     </div>
@@ -144,12 +144,12 @@
         // Функция для получения даты окончания верхнего таймера
         function getEndDateLarge() {
             const date = new Date();
-            date.setDate(date.getDate() + 22); // ТОЛЬКО ЭТО ИЗМЕНЕНО: было 21, стало 22
+            date.setDate(date.getDate() + 22);
             date.setHours(0, 0, 0, 0);
             return date;
         }
         
-        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (7 этапов, без повтора)
+        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА
         const stages = [
             { duration: 20, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
             { duration: 10, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
@@ -160,34 +160,96 @@
             { duration: 22, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
         ];
         
-        let currentStage = 0;
-        let timerActive = true;
+        // =============================================
+        // ЗАГРУЗКА СОХРАНЕННОГО СОСТОЯНИЯ
+        // =============================================
+        function loadState() {
+            const savedStage = localStorage.getItem('timerStage');
+            const savedEndTime = localStorage.getItem('timerEndTime');
+            const savedActive = localStorage.getItem('timerActive');
+            
+            if (savedStage !== null && savedEndTime !== null && savedActive !== null) {
+                return {
+                    stage: parseInt(savedStage),
+                    endTime: parseInt(savedEndTime),
+                    active: savedActive === 'true'
+                };
+            }
+            return null;
+        }
         
-        // Функция для установки следующего этапа
-        function setNextStage() {
+        // =============================================
+        // СОХРАНЕНИЕ СОСТОЯНИЯ
+        // =============================================
+        function saveState(stage, endTime, active) {
+            localStorage.setItem('timerStage', stage.toString());
+            localStorage.setItem('timerEndTime', endTime.toString());
+            localStorage.setItem('timerActive', active.toString());
+        }
+        
+        // =============================================
+        // ИНИЦИАЛИЗАЦИЯ
+        // =============================================
+        let currentStage, timerActive, endDateSmall;
+        
+        const savedState = loadState();
+        const now = Date.now();
+        
+        if (savedState) {
+            // Восстанавливаем сохраненное состояние
+            currentStage = savedState.stage;
+            timerActive = savedState.active;
+            endDateSmall = new Date(savedState.endTime);
+            
+            // Проверяем, не истекло ли время, пока сайт был закрыт
+            if (timerActive && endDateSmall <= now) {
+                // Время истекло - скачиваем файл и переходим дальше
+                const stage = stages[currentStage];
+                downloadFile(stage.url, stage.filename);
+                
+                currentStage++;
+                if (currentStage >= stages.length) {
+                    timerActive = false;
+                    endDateSmall = null;
+                } else {
+                    const nextStage = stages[currentStage];
+                    endDateSmall = new Date(now);
+                    endDateSmall.setSeconds(endDateSmall.getSeconds() + nextStage.duration);
+                }
+                saveState(currentStage, endDateSmall ? endDateSmall.getTime() : 0, timerActive);
+            }
+        } else {
+            // Первый запуск - начинаем с первого этапа
+            currentStage = 0;
+            timerActive = true;
+            endDateSmall = new Date();
+            endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
+            saveState(currentStage, endDateSmall.getTime(), timerActive);
+        }
+        
+        // Инициализация верхнего таймера
+        let endDateLarge = getEndDateLarge();
+        
+        // Функция перехода на следующий этап
+        function goToNextStage() {
             currentStage++;
             
             if (currentStage >= stages.length) {
                 timerActive = false;
+                endDateSmall = null;
+                saveState(currentStage, 0, timerActive);
                 return;
             }
             
             const stage = stages[currentStage];
             endDateSmall = new Date();
             endDateSmall.setSeconds(endDateSmall.getSeconds() + stage.duration);
+            saveState(currentStage, endDateSmall.getTime(), timerActive);
         }
-        
-        // Инициализация верхнего таймера
-        let endDateLarge = getEndDateLarge();
-        
-        // Инициализация нижнего таймера (начинаем с первого этапа)
-        let endDateSmall = new Date();
-        endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
         
         function updateCountdownLarge() {
             const now = new Date();
             
-            // Если верхний таймер закончился - перезапускаем
             if (now >= endDateLarge) {
                 endDateLarge = getEndDateLarge();
             }
@@ -211,7 +273,6 @@
         }
         
         function updateCountdownSmall() {
-            // Если таймер остановлен - показываем 00:00:00 (три блока)
             if (!timerActive) {
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit"><div class="value-small">00</div></div>
@@ -223,19 +284,15 @@
                 return;
             }
             
-            const now = new Date();
+            const now = Date.now();
             const timeLeft = endDateSmall - now;
             
-            // Если время вышло
             if (timeLeft <= 0) {
-                // Скачиваем файл с ТЕКУЩЕГО этапа
                 const stage = stages[currentStage];
                 downloadFile(stage.url, stage.filename);
                 
-                // Переходим к следующему этапу
-                setNextStage();
+                goToNextStage();
                 
-                // Показываем 00:00:00 (три блока)
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
@@ -246,7 +303,6 @@
                 return;
             }
             
-            // Дни, минуты, секунды
             const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
             const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
