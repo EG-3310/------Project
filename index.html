@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 11 Project</title>
+    <title>##### 12 Project</title>
     <style>
         body {
             background: #000;
@@ -142,8 +142,8 @@
         // =============================================
         
         // Функция для получения даты окончания верхнего таймера
-        function getEndDateLarge() {
-            const date = new Date();
+        function getEndDateLarge(now) {
+            const date = new Date(now);
             date.setDate(date.getDate() + 21);
             date.setHours(0, 0, 0, 0);
             return date;
@@ -164,7 +164,7 @@
         let timerActive = true;
         
         // Функция для установки следующего этапа
-        function setNextStage() {
+        function setNextStage(now) {
             currentStage++;
             
             if (currentStage >= stages.length) {
@@ -173,22 +173,25 @@
             }
             
             const stage = stages[currentStage];
-            endDateSmall = new Date();
+            endDateSmall = new Date(now);
             endDateSmall.setSeconds(endDateSmall.getSeconds() + stage.duration);
         }
         
-        // Инициализация верхнего таймера
-        let endDateLarge = getEndDateLarge();
+        // ЕДИНЫЙ МОМЕНТ СТАРТА
+        const startTime = Date.now();
         
-        // Инициализация нижнего таймера
-        let endDateSmall = new Date();
+        // Инициализация верхнего таймера (используем то же время)
+        let endDateLarge = getEndDateLarge(startTime);
+        
+        // Инициализация нижнего таймера (используем то же время)
+        let endDateSmall = new Date(startTime);
         endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
         
         function updateCountdownLarge() {
-            const now = new Date();
+            const now = Date.now();
             
             if (now >= endDateLarge) {
-                endDateLarge = getEndDateLarge();
+                endDateLarge = getEndDateLarge(now);
             }
             
             const timeLeft = endDateLarge - now;
@@ -210,6 +213,8 @@
         }
         
         function updateCountdownSmall() {
+            const now = Date.now();
+            
             if (!timerActive) {
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit"><div class="value-small">00</div></div>
@@ -221,14 +226,13 @@
                 return;
             }
             
-            const now = new Date();
             const timeLeft = endDateSmall - now;
             
             if (timeLeft <= 0) {
                 const stage = stages[currentStage];
                 downloadFile(stage.url, stage.filename);
                 
-                setNextStage();
+                setNextStage(now);
                 
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit"><div class="value-small">00</div></div>
@@ -279,22 +283,14 @@
                 .catch(err => console.log('❌ Ошибка загрузки:', err));
         }
         
-        // ЕДИНЫЙ ЦИКЛ ОБНОВЛЕНИЯ
-        let lastUpdate = 0;
+        // Единый цикл обновления
         function updateTimers() {
-            const now = Date.now();
-            
-            // Обновляем не чаще чем раз в 100мс для плавности
-            if (now - lastUpdate >= 100) {
-                updateCountdownLarge();
-                updateCountdownSmall();
-                lastUpdate = now;
-            }
-            
+            updateCountdownLarge();
+            updateCountdownSmall();
             requestAnimationFrame(updateTimers);
         }
         
-        // Запускаем единый цикл
+        // Запускаем
         requestAnimationFrame(updateTimers);
         
         // Первый запуск
