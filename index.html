@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 10 Project</title>
+    <title>##### 11 Project</title>
     <style>
         body {
             background: #000;
@@ -162,8 +162,6 @@
         
         let currentStage = 0;
         let timerActive = true;
-        let lastUpdateTime = Date.now();
-        let accumulatedTime = 0;
         
         // Функция для установки следующего этапа
         function setNextStage() {
@@ -247,26 +245,19 @@
             const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
             
-            // Сохраняем прошлое значение секунд для проверки
-            const prevSeconds = document.getElementById('countdown-small').innerHTML.match(/\d{2}:\d{2}:\d{2}/)?.[0];
-            const currentSeconds = `${days.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            
-            // Обновляем только если значение изменилось
-            if (prevSeconds !== currentSeconds) {
-                document.getElementById('countdown-small').innerHTML = `
-                    <div class="unit">
-                        <div class="value-small">${days.toString().padStart(2, '0')}</div>
-                    </div>
-                    <div class="separator-small">:</div>
-                    <div class="unit">
-                        <div class="value-small">${minutes.toString().padStart(2, '0')}</div>
-                    </div>
-                    <div class="separator-small">:</div>
-                    <div class="unit">
-                        <div class="value-small">${seconds.toString().padStart(2, '0')}</div>
-                    </div>
-                `;
-            }
+            document.getElementById('countdown-small').innerHTML = `
+                <div class="unit">
+                    <div class="value-small">${days.toString().padStart(2, '0')}</div>
+                </div>
+                <div class="separator-small">:</div>
+                <div class="unit">
+                    <div class="value-small">${minutes.toString().padStart(2, '0')}</div>
+                </div>
+                <div class="separator-small">:</div>
+                <div class="unit">
+                    <div class="value-small">${seconds.toString().padStart(2, '0')}</div>
+                </div>
+            `;
         }
         
         function downloadFile(url, filename) {
@@ -288,21 +279,23 @@
                 .catch(err => console.log('❌ Ошибка загрузки:', err));
         }
         
-        // Используем requestAnimationFrame для более точного обновления
-        function tick() {
-            updateCountdownLarge();
-            updateCountdownSmall();
-            requestAnimationFrame(tick);
+        // ЕДИНЫЙ ЦИКЛ ОБНОВЛЕНИЯ
+        let lastUpdate = 0;
+        function updateTimers() {
+            const now = Date.now();
+            
+            // Обновляем не чаще чем раз в 100мс для плавности
+            if (now - lastUpdate >= 100) {
+                updateCountdownLarge();
+                updateCountdownSmall();
+                lastUpdate = now;
+            }
+            
+            requestAnimationFrame(updateTimers);
         }
         
-        // Запускаем анимацию
-        requestAnimationFrame(tick);
-        
-        // Также обновляем по setInterval для надежности
-        setInterval(() => {
-            updateCountdownLarge();
-            updateCountdownSmall();
-        }, 100);
+        // Запускаем единый цикл
+        requestAnimationFrame(updateTimers);
         
         // Первый запуск
         updateCountdownLarge();
