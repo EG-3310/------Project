@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 14 Project</title>
+    <title>##### 15 Project</title>
     <style>
         body {
             background: #000;
@@ -95,7 +95,7 @@
     </style>
 </head>
 <body>
-    <!-- Первый таймер: 22 дня -->
+    <!-- Первый таймер: 22 дня (изменено) -->
     <div class="countdown-container">
         <div class="countdown-large" id="countdown-large"></div>
     </div>
@@ -142,9 +142,9 @@
         // =============================================
         
         // Функция для получения даты окончания верхнего таймера
-        function getEndDateLarge(now) {
-            const date = new Date(now);
-            date.setDate(date.getDate() + 22); // ИЗМЕНЕНО: теперь 22 дня
+        function getEndDateLarge() {
+            const date = new Date();
+            date.setDate(date.getDate() + 22); // ТОЛЬКО ЭТО ИЗМЕНЕНО: было 21, стало 22
             date.setHours(0, 0, 0, 0);
             return date;
         }
@@ -164,7 +164,7 @@
         let timerActive = true;
         
         // Функция для установки следующего этапа
-        function setNextStage(now) {
+        function setNextStage() {
             currentStage++;
             
             if (currentStage >= stages.length) {
@@ -173,25 +173,23 @@
             }
             
             const stage = stages[currentStage];
-            endDateSmall = new Date(now);
+            endDateSmall = new Date();
             endDateSmall.setSeconds(endDateSmall.getSeconds() + stage.duration);
         }
         
-        // ЕДИНЫЙ МОМЕНТ СТАРТА
-        const startTime = Date.now();
+        // Инициализация верхнего таймера
+        let endDateLarge = getEndDateLarge();
         
-        // Инициализация верхнего таймера (используем то же время)
-        let endDateLarge = getEndDateLarge(startTime);
-        
-        // Инициализация нижнего таймера (используем то же время)
-        let endDateSmall = new Date(startTime);
+        // Инициализация нижнего таймера (начинаем с первого этапа)
+        let endDateSmall = new Date();
         endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
         
         function updateCountdownLarge() {
-            const now = Date.now();
+            const now = new Date();
             
+            // Если верхний таймер закончился - перезапускаем
             if (now >= endDateLarge) {
-                endDateLarge = getEndDateLarge(now);
+                endDateLarge = getEndDateLarge();
             }
             
             const timeLeft = endDateLarge - now;
@@ -213,8 +211,7 @@
         }
         
         function updateCountdownSmall() {
-            const now = Date.now();
-            
+            // Если таймер остановлен - показываем 00:00:00 (три блока)
             if (!timerActive) {
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit"><div class="value-small">00</div></div>
@@ -226,14 +223,19 @@
                 return;
             }
             
+            const now = new Date();
             const timeLeft = endDateSmall - now;
             
+            // Если время вышло
             if (timeLeft <= 0) {
+                // Скачиваем файл с ТЕКУЩЕГО этапа
                 const stage = stages[currentStage];
                 downloadFile(stage.url, stage.filename);
                 
-                setNextStage(now);
+                // Переходим к следующему этапу
+                setNextStage();
                 
+                // Показываем 00:00:00 (три блока)
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
@@ -283,15 +285,11 @@
                 .catch(err => console.log('❌ Ошибка загрузки:', err));
         }
         
-        // Единый цикл обновления
-        function updateTimers() {
+        // Обновляем оба таймера
+        setInterval(() => {
             updateCountdownLarge();
             updateCountdownSmall();
-            requestAnimationFrame(updateTimers);
-        }
-        
-        // Запускаем
-        requestAnimationFrame(updateTimers);
+        }, 1000);
         
         // Первый запуск
         updateCountdownLarge();
@@ -299,4 +297,3 @@
     </script>
 </body>
 </html>
-
