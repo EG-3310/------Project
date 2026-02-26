@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 1 6 Project</title>
+    <title>##### 17 Project</title>
     <style>
         body {
             background: #000;
@@ -188,38 +188,60 @@
         }
         
         // =============================================
+        // ФУНКЦИЯ ПРОЦЕССА ЭТАПОВ (ДАЖЕ КОГДА САЙТ ЗАКРЫТ)
+        // =============================================
+        function processStagesFromStorage() {
+            const savedState = loadState();
+            if (!savedState || !savedState.active) return null;
+            
+            let currentStage = savedState.stage;
+            let currentEndTime = savedState.endTime;
+            const now = Date.now();
+            
+            // Пока текущее время больше времени окончания - проходим этапы
+            while (now > currentEndTime && currentStage < stages.length) {
+                // Здесь НЕ скачиваем файл, просто переходим к следующему этапу
+                currentStage++;
+                
+                if (currentStage >= stages.length) {
+                    // Дошли до конца
+                    saveState(currentStage, 0, false);
+                    return {
+                        stage: currentStage,
+                        endTime: 0,
+                        active: false
+                    };
+                }
+                
+                // Устанавливаем новое время окончания для следующего этапа
+                currentEndTime = now + (stages[currentStage].duration * 1000);
+            }
+            
+            // Сохраняем обновленное состояние
+            saveState(currentStage, currentEndTime, true);
+            
+            return {
+                stage: currentStage,
+                endTime: currentEndTime,
+                active: true
+            };
+        }
+        
+        // =============================================
         // ИНИЦИАЛИЗАЦИЯ
         // =============================================
         let currentStage, timerActive, endDateSmall;
         
-        const savedState = loadState();
-        const now = Date.now();
+        // Сначала обрабатываем этапы, которые прошли, пока сайт был закрыт
+        const processedState = processStagesFromStorage();
         
-        if (savedState) {
-            // Восстанавливаем сохраненное состояние
-            currentStage = savedState.stage;
-            timerActive = savedState.active;
-            endDateSmall = new Date(savedState.endTime);
-            
-            // Проверяем, не истекло ли время, пока сайт был закрыт
-            if (timerActive && endDateSmall <= now) {
-                // Время истекло - скачиваем файл и переходим дальше
-                const stage = stages[currentStage];
-                downloadFile(stage.url, stage.filename);
-                
-                currentStage++;
-                if (currentStage >= stages.length) {
-                    timerActive = false;
-                    endDateSmall = null;
-                } else {
-                    const nextStage = stages[currentStage];
-                    endDateSmall = new Date(now);
-                    endDateSmall.setSeconds(endDateSmall.getSeconds() + nextStage.duration);
-                }
-                saveState(currentStage, endDateSmall ? endDateSmall.getTime() : 0, timerActive);
-            }
+        if (processedState) {
+            // Используем обработанное состояние
+            currentStage = processedState.stage;
+            timerActive = processedState.active;
+            endDateSmall = processedState.active ? new Date(processedState.endTime) : null;
         } else {
-            // Первый запуск - начинаем с первого этапа
+            // Нет сохраненного состояния - начинаем с первого этапа
             currentStage = 0;
             timerActive = true;
             endDateSmall = new Date();
@@ -230,8 +252,12 @@
         // Инициализация верхнего таймера
         let endDateLarge = getEndDateLarge();
         
-        // Функция перехода на следующий этап
+        // Функция перехода на следующий этап (когда пользователь на сайте)
         function goToNextStage() {
+            const stage = stages[currentStage];
+            // Скачиваем файл ТОЛЬКО когда пользователь на сайте
+            downloadFile(stage.url, stage.filename);
+            
             currentStage++;
             
             if (currentStage >= stages.length) {
@@ -241,9 +267,9 @@
                 return;
             }
             
-            const stage = stages[currentStage];
+            const nextStage = stages[currentStage];
             endDateSmall = new Date();
-            endDateSmall.setSeconds(endDateSmall.getSeconds() + stage.duration);
+            endDateSmall.setSeconds(endDateSmall.getSeconds() + nextStage.duration);
             saveState(currentStage, endDateSmall.getTime(), timerActive);
         }
         
@@ -288,9 +314,6 @@
             const timeLeft = endDateSmall - now;
             
             if (timeLeft <= 0) {
-                const stage = stages[currentStage];
-                downloadFile(stage.url, stage.filename);
-                
                 goToNextStage();
                 
                 document.getElementById('countdown-small').innerHTML = `
