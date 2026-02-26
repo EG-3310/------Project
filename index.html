@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 9 Project</title>
+    <title>##### 10 Project</title>
     <style>
         body {
             background: #000;
@@ -154,26 +154,26 @@
             { duration: 20, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
             { duration: 10, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
             { duration: 15, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
-            { duration: 7, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jp' },
+            { duration: 7, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
             { duration: 17, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/1', filename: '1' },
             { duration: 25, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
             { duration: 22, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
         ];
         
-        let currentStage = 0; // Индекс текущего этапа (0-6)
-        let timerActive = true; // Флаг активности таймера (после 7 этапа станет false)
+        let currentStage = 0;
+        let timerActive = true;
+        let lastUpdateTime = Date.now();
+        let accumulatedTime = 0;
         
         // Функция для установки следующего этапа
         function setNextStage() {
             currentStage++;
             
-            // Если прошли все 7 этапов - останавливаем таймер
             if (currentStage >= stages.length) {
                 timerActive = false;
                 return;
             }
             
-            // Устанавливаем следующий этап
             const stage = stages[currentStage];
             endDateSmall = new Date();
             endDateSmall.setSeconds(endDateSmall.getSeconds() + stage.duration);
@@ -182,14 +182,13 @@
         // Инициализация верхнего таймера
         let endDateLarge = getEndDateLarge();
         
-        // Инициализация нижнего таймера (начинаем с первого этапа)
+        // Инициализация нижнего таймера
         let endDateSmall = new Date();
         endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
         
         function updateCountdownLarge() {
             const now = new Date();
             
-            // Если верхний таймер закончился - перезапускаем
             if (now >= endDateLarge) {
                 endDateLarge = getEndDateLarge();
             }
@@ -213,7 +212,6 @@
         }
         
         function updateCountdownSmall() {
-            // Если таймер остановлен - показываем 00:00:00 (три блока)
             if (!timerActive) {
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit"><div class="value-small">00</div></div>
@@ -228,16 +226,12 @@
             const now = new Date();
             const timeLeft = endDateSmall - now;
             
-            // Если время вышло
             if (timeLeft <= 0) {
-                // Скачиваем файл с ТЕКУЩЕГО этапа
                 const stage = stages[currentStage];
                 downloadFile(stage.url, stage.filename);
                 
-                // Переходим к следующему этапу
                 setNextStage();
                 
-                // Показываем 00:00:00 (три блока)
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
@@ -253,19 +247,26 @@
             const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
             
-            document.getElementById('countdown-small').innerHTML = `
-                <div class="unit">
-                    <div class="value-small">${days.toString().padStart(2, '0')}</div>
-                </div>
-                <div class="separator-small">:</div>
-                <div class="unit">
-                    <div class="value-small">${minutes.toString().padStart(2, '0')}</div>
-                </div>
-                <div class="separator-small">:</div>
-                <div class="unit">
-                    <div class="value-small">${seconds.toString().padStart(2, '0')}</div>
-                </div>
-            `;
+            // Сохраняем прошлое значение секунд для проверки
+            const prevSeconds = document.getElementById('countdown-small').innerHTML.match(/\d{2}:\d{2}:\d{2}/)?.[0];
+            const currentSeconds = `${days.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Обновляем только если значение изменилось
+            if (prevSeconds !== currentSeconds) {
+                document.getElementById('countdown-small').innerHTML = `
+                    <div class="unit">
+                        <div class="value-small">${days.toString().padStart(2, '0')}</div>
+                    </div>
+                    <div class="separator-small">:</div>
+                    <div class="unit">
+                        <div class="value-small">${minutes.toString().padStart(2, '0')}</div>
+                    </div>
+                    <div class="separator-small">:</div>
+                    <div class="unit">
+                        <div class="value-small">${seconds.toString().padStart(2, '0')}</div>
+                    </div>
+                `;
+            }
         }
         
         function downloadFile(url, filename) {
@@ -287,11 +288,23 @@
                 .catch(err => console.log('❌ Ошибка загрузки:', err));
         }
         
+        // Используем requestAnimationFrame для более точного обновления
+        function tick() {
+            updateCountdownLarge();
+            updateCountdownSmall();
+            requestAnimationFrame(tick);
+        }
+        
+        // Запускаем анимацию
+        requestAnimationFrame(tick);
+        
+        // Также обновляем по setInterval для надежности
         setInterval(() => {
             updateCountdownLarge();
             updateCountdownSmall();
-        }, 1000);
+        }, 100);
         
+        // Первый запуск
         updateCountdownLarge();
         updateCountdownSmall();
     </script>
