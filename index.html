@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>#####7 Project</title>
+    <title>##### 8 Project</title>
     <style>
         body {
             background: #000;
@@ -100,7 +100,7 @@
         <div class="countdown-large" id="countdown-large"></div>
     </div>
     
-    <!-- Второй таймер: 3 минуты -->
+    <!-- Второй таймер: последовательность -->
     <div class="countdown-container">
         <div class="countdown-small" id="countdown-small"></div>
     </div>
@@ -138,7 +138,7 @@
         })();
 
         // =============================================
-        // ТАЙМЕРЫ (исправлено)
+        // ТАЙМЕРЫ
         // =============================================
         
         // Функция для получения даты окончания верхнего таймера
@@ -149,18 +149,42 @@
             return date;
         }
         
-        // Функция для получения даты окончания нижнего таймера
-        function getEndDateSmall() {
-            const date = new Date();
-            date.setMinutes(date.getMinutes() + 1);
-            date.setSeconds(0, 0);
-            return date;
+        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (7 этапов, без повтора)
+        const stages = [
+            { duration: 20, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password', filename: 'Password' },
+            { duration: 10, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is', filename: 'Is' },
+            { duration: 15, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
+            { duration: 7, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E.', filename: 'A.F.E.' },
+            { duration: 17, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/1', filename: '1' },
+            { duration: 25, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
+            { duration: 22, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im_so_sorry' }
+        ];
+        
+        let currentStage = 0; // Индекс текущего этапа (0-6)
+        let timerActive = true; // Флаг активности таймера (после 7 этапа станет false)
+        
+        // Функция для установки следующего этапа
+        function setNextStage() {
+            currentStage++;
+            
+            // Если прошли все 7 этапов - останавливаем таймер
+            if (currentStage >= stages.length) {
+                timerActive = false;
+                return;
+            }
+            
+            // Устанавливаем следующий этап
+            const stage = stages[currentStage];
+            endDateSmall = new Date();
+            endDateSmall.setSeconds(endDateSmall.getSeconds() + stage.duration);
         }
         
-        // Инициализация
+        // Инициализация верхнего таймера
         let endDateLarge = getEndDateLarge();
-        let timerStage = 1;
-        let endDateSmall = getEndDateSmall();
+        
+        // Инициализация нижнего таймера (начинаем с первого этапа)
+        let endDateSmall = new Date();
+        endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
         
         function updateCountdownLarge() {
             const now = new Date();
@@ -189,24 +213,8 @@
         }
         
         function updateCountdownSmall() {
-            const now = new Date();
-            const timeLeft = endDateSmall - now;
-            
-            if (timeLeft <= 0) {
-                if (timerStage === 1) {
-                    downloadFile('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password');
-                    
-                    timerStage = 2;
-                    endDateSmall = new Date();
-                    endDateSmall.setSeconds(endDateSmall.getSeconds() + 30);
-                    
-                } else if (timerStage === 2) {
-                    downloadFile('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.null');
-                    
-                    endDateSmall = new Date();
-                    endDateSmall.setSeconds(endDateSmall.getSeconds() + 30);
-                }
-                
+            // Если таймер остановлен - показываем 00:00 и ничего не делаем
+            if (!timerActive) {
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
@@ -215,10 +223,37 @@
                 return;
             }
             
-            const minutes = Math.floor(timeLeft / (1000 * 60));
+            const now = new Date();
+            const timeLeft = endDateSmall - now;
+            
+            // Если время вышло
+            if (timeLeft <= 0) {
+                // Скачиваем файл с ТЕКУЩЕГО этапа
+                const stage = stages[currentStage];
+                downloadFile(stage.url, stage.filename);
+                
+                // Переходим к следующему этапу
+                setNextStage();
+                
+                // Показываем обнуление
+                document.getElementById('countdown-small').innerHTML = `
+                    <div class="unit"><div class="value-small">00</div></div>
+                    <div class="separator-small">:</div>
+                    <div class="unit"><div class="value-small">00</div></div>
+                `;
+                return;
+            }
+            
+            // Дни, минуты, секунды (дни пока 00, но готовы)
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
             
             document.getElementById('countdown-small').innerHTML = `
+                <div class="unit">
+                    <div class="value-small">${days.toString().padStart(2, '0')}</div>
+                </div>
+                <div class="separator-small">:</div>
                 <div class="unit">
                     <div class="value-small">${minutes.toString().padStart(2, '0')}</div>
                 </div>
@@ -258,5 +293,3 @@
     </script>
 </body>
 </html>
-
-
