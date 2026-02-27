@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 2  3 Project</title>
+    <title>##### 24 Project</title>
     <style>
         body {
             background: #000;
@@ -296,6 +296,12 @@
                 endDateLarge = new Date(saved.largeEndTime);
                 // Проверяем, не истекло ли время
                 if (Date.now() >= saved.largeEndTime) {
+                    // Если время истекло, скачиваем файл и завершаем
+                    downloadFile(
+                        'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/rar/Null.null',
+                        'Null.null'
+                    );
+                    
                     largeTimerCompleted = true;
                     endDateLarge = null;
                     saveState(
@@ -375,6 +381,12 @@
                 
                 // Проверяем, не закончился ли таймер
                 if (now >= endDateLarge) {
+                    // Скачиваем файл при завершении
+                    downloadFile(
+                        'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/rar/Null.null',
+                        'Null.null'
+                    );
+                    
                     largeTimerCompleted = true;
                     endDateLarge = null;
                     saveState(
