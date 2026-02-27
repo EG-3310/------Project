@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 22 Project</title>
+    <title>##### 2  3 Project</title>
     <style>
         body {
             background: #000;
@@ -179,22 +179,10 @@
             // ТАЙМЕРЫ
             // =============================================
             
-            // Функция для получения даты окончания верхнего таймера (временно 1 минута)
+            // Функция для получения даты окончания верхнего таймера (1 минута)
             function getEndDateLarge() {
                 const date = new Date();
-                
-                // Устанавливаем время старта на 17:00 сегодняшнего дня
-                date.setUTCHours(14, 0, 0, 0); // 14:00 UTC = 17:00 МСК
-                
-                // Если сейчас меньше 17:00, таймер начнётся с сегодняшнего дня
-                // Если больше 17:00, таймер начнётся с завтрашнего дня в 17:00
-                if (date < new Date()) {
-                    date.setDate(date.getDate() + 1);
-                }
-                
-                // ВРЕМЕННО: добавляем 1 минуту вместо 21 дня
-                date.setMinutes(date.getMinutes() + 1);
-                
+                date.setMinutes(date.getMinutes() + 1); // 1 минута от текущего момента
                 return date;
             }
             
