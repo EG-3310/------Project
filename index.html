@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 20 Project</title>
+    <title>##### 2 1 Project</title>
     <style>
         body {
             background: #000;
@@ -182,14 +182,25 @@
             // Функция для получения даты окончания верхнего таймера
             function getEndDateLarge() {
                 const date = new Date();
-                date.setDate(date.getDate() + 21); // ИЗМЕНЕНО: 21 день
-                date.setHours(0, 0, 0, 0);
+                
+                // Устанавливаем время старта на 17:00 сегодняшнего дня
+                date.setUTCHours(14, 0, 0, 0); // 14:00 UTC = 17:00 МСК
+                
+                // Если сейчас меньше 17:00, таймер начнётся с сегодняшнего дня
+                // Если больше 17:00, таймер начнётся с завтрашнего дня в 17:00
+                if (date < new Date()) {
+                    date.setDate(date.getDate() + 1);
+                }
+                
+                // Добавляем 21 день
+                date.setDate(date.getDate() + 21);
+                
                 return date;
             }
             
             // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА
             const stages = [
-                { duration: 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' }, // ИЗМЕНЕНО: 1 минута (60 секунд)
+                { duration: 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
                 { duration: 10, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
                 { duration: 15, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
                 { duration: 7, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
