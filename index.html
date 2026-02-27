@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E.F.T.A.F.E</title> <!-- Название будет меняться через JS -->
+    <title>##### 25 Project</title>
     <style>
         body {
             background: #000;
@@ -179,10 +179,21 @@
             // ТАЙМЕРЫ
             // =============================================
             
-            // Функция для получения даты окончания верхнего таймера (1 минута)
+            // Функция для получения даты окончания верхнего таймера (21 день, окончание в 17:00 МСК)
             function getEndDateLarge() {
                 const date = new Date();
-                date.setMinutes(date.getMinutes() + 1); // 1 минута от текущего момента
+                
+                // Устанавливаем время окончания на 17:00 сегодняшнего дня
+                date.setUTCHours(14, 0, 0, 0); // 14:00 UTC = 17:00 МСК
+                
+                // Если сейчас больше 17:00, берём завтрашний день
+                if (date < new Date()) {
+                    date.setDate(date.getDate() + 1);
+                }
+                
+                // Добавляем 21 день
+                date.setDate(date.getDate() + 21);
+                
                 return date;
             }
             
@@ -192,7 +203,7 @@
                 { duration: 10, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
                 { duration: 15, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
                 { duration: 7, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
-                { duration: 17, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/1', filename: '1' },
+                { duration: 17, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },
                 { duration: 25, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
                 { duration: 22, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
             ];
@@ -285,7 +296,6 @@
             let currentStage, timerActive, endDateSmall, timerCompleted;
             let largeTimerCompleted = false;
             let endDateLarge;
-            let titleChanged = false; // Флаг для отслеживания смены названия
             
             const saved = loadState();
             
@@ -379,13 +389,6 @@
                 }
                 
                 const now = new Date();
-                const timeLeft = endDateLarge - now;
-                
-                // Проверяем, осталось ли 30 секунд или меньше
-                if (timeLeft <= 30000 && !titleChanged) {
-                    document.title = 'E.F.T.A.F.E';
-                    titleChanged = true;
-                }
                 
                 // Проверяем, не закончился ли таймер
                 if (now >= endDateLarge) {
@@ -417,6 +420,8 @@
                     `;
                     return;
                 }
+                
+                const timeLeft = endDateLarge - now;
                 
                 const days = Math.max(0, Math.floor(timeLeft / (1000 * 60 * 60 * 24)));
                 const hours = Math.max(0, Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
