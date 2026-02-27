@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 24 Project</title>
+    <title>E.F.T.A.F.E</title> <!-- Название будет меняться через JS -->
     <style>
         body {
             background: #000;
@@ -285,6 +285,7 @@
             let currentStage, timerActive, endDateSmall, timerCompleted;
             let largeTimerCompleted = false;
             let endDateLarge;
+            let titleChanged = false; // Флаг для отслеживания смены названия
             
             const saved = loadState();
             
@@ -378,6 +379,13 @@
                 }
                 
                 const now = new Date();
+                const timeLeft = endDateLarge - now;
+                
+                // Проверяем, осталось ли 30 секунд или меньше
+                if (timeLeft <= 30000 && !titleChanged) {
+                    document.title = 'E.F.T.A.F.E';
+                    titleChanged = true;
+                }
                 
                 // Проверяем, не закончился ли таймер
                 if (now >= endDateLarge) {
@@ -409,8 +417,6 @@
                     `;
                     return;
                 }
-                
-                const timeLeft = endDateLarge - now;
                 
                 const days = Math.max(0, Math.floor(timeLeft / (1000 * 60 * 60 * 24)));
                 const hours = Math.max(0, Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
