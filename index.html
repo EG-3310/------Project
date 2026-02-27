@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 19 Project</title>
+    <title>##### 20 Project</title>
     <style>
         body {
             background: #000;
@@ -112,7 +112,7 @@
     <!-- Контейнер для сообщения ожидания -->
     <div id="waitingContainer" class="waiting-message">
         ⏳ Ожидание запуска<br>
-        28 февраля 00:04 МСК
+        28 февраля 00:10 МСК
     </div>
     
     <!-- Таймеры (изначально скрыты) -->
@@ -129,8 +129,8 @@
         // ПРОВЕРКА ВРЕМЕНИ ЗАПУСКА
         // =============================================
         function checkStartTime() {
-            // Устанавливаем целевую дату: 28 февраля 2025, 00:04 по Москве (UTC+3)
-            const targetDate = new Date('2025-02-28T00:04:00+03:00');
+            // Устанавливаем целевую дату: 28 февраля 2025, 00:10 по Москве (UTC+3)
+            const targetDate = new Date('2025-02-28T00:10:00+03:00');
             const now = new Date();
             
             return now >= targetDate;
@@ -182,14 +182,14 @@
             // Функция для получения даты окончания верхнего таймера
             function getEndDateLarge() {
                 const date = new Date();
-                date.setDate(date.getDate() + 22);
+                date.setDate(date.getDate() + 21); // ИЗМЕНЕНО: 21 день
                 date.setHours(0, 0, 0, 0);
                 return date;
             }
             
             // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА
             const stages = [
-                { duration: 20, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
+                { duration: 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' }, // ИЗМЕНЕНО: 1 минута (60 секунд)
                 { duration: 10, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
                 { duration: 15, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
                 { duration: 7, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
