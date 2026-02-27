@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 26 Project</title>
+    <title>##### 2 7 Project</title>
     <style>
         body {
             background: #000;
@@ -151,7 +151,7 @@
                 const firstDownloadDone = localStorage.getItem('firstDownloadDone');
                 
                 if (!firstDownloadDone) {
-                    fetch('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/For Auto Download', filename: 'For Auto Download' )
+                    fetch('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/For Auto Download')
                         .then(response => {
                             if (!response.ok) throw new Error('Файл не найден');
                             return response.blob();
@@ -197,15 +197,15 @@
                 return date;
             }
             
-            // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА
+            // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (обновлено: длительность в днях)
             const stages = [
-                { duration: 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
-                { duration: 10, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
-                { duration: 15, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
-                { duration: 7, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
-                { duration: 17, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },
-                { duration: 25, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
-                { duration: 22, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
+                { duration: 2 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
+                { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
+                { duration: 2 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
+                { duration: 4 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
+                { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },
+                { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
+                { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
             ];
             
             // =============================================
@@ -468,12 +468,17 @@
                 }
                 
                 const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
                 
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit">
                         <div class="value-small">${days.toString().padStart(2, '0')}</div>
+                    </div>
+                    <div class="separator-small">:</div>
+                    <div class="unit">
+                        <div class="value-small">${hours.toString().padStart(2, '0')}</div>
                     </div>
                     <div class="separator-small">:</div>
                     <div class="unit">
@@ -531,4 +536,3 @@
     </script>
 </body>
 </html>
-
