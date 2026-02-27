@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 17 Project</title>
+    <title>##### 1 8 Project</title>
     <style>
         body {
             background: #000;
@@ -167,35 +167,49 @@
             const savedStage = localStorage.getItem('timerStage');
             const savedEndTime = localStorage.getItem('timerEndTime');
             const savedActive = localStorage.getItem('timerActive');
+            const savedCompleted = localStorage.getItem('timerCompleted');
             
-            if (savedStage !== null && savedEndTime !== null && savedActive !== null) {
-                return {
-                    stage: parseInt(savedStage),
-                    endTime: parseInt(savedEndTime),
-                    active: savedActive === 'true'
-                };
-            }
-            return null;
+            return {
+                stage: savedStage !== null ? parseInt(savedStage) : null,
+                endTime: savedEndTime !== null ? parseInt(savedEndTime) : null,
+                active: savedActive !== null ? savedActive === 'true' : null,
+                completed: savedCompleted !== null ? savedCompleted === 'true' : false
+            };
         }
         
         // =============================================
         // СОХРАНЕНИЕ СОСТОЯНИЯ
         // =============================================
-        function saveState(stage, endTime, active) {
-            localStorage.setItem('timerStage', stage.toString());
-            localStorage.setItem('timerEndTime', endTime.toString());
-            localStorage.setItem('timerActive', active.toString());
+        function saveState(stage, endTime, active, completed) {
+            if (stage !== null) localStorage.setItem('timerStage', stage.toString());
+            if (endTime !== null) localStorage.setItem('timerEndTime', endTime.toString());
+            if (active !== null) localStorage.setItem('timerActive', active.toString());
+            localStorage.setItem('timerCompleted', completed ? 'true' : 'false');
         }
         
         // =============================================
         // ФУНКЦИЯ ПРОЦЕССА ЭТАПОВ (ДАЖЕ КОГДА САЙТ ЗАКРЫТ)
         // =============================================
         function processStagesFromStorage() {
-            const savedState = loadState();
-            if (!savedState || !savedState.active) return null;
+            const saved = loadState();
             
-            let currentStage = savedState.stage;
-            let currentEndTime = savedState.endTime;
+            // Если таймер уже полностью завершен - возвращаем завершенное состояние
+            if (saved.completed) {
+                return {
+                    stage: stages.length, // Этапов больше нет
+                    endTime: 0,
+                    active: false,
+                    completed: true
+                };
+            }
+            
+            // Если нет активного таймера или нет сохраненных данных
+            if (!saved.active || saved.stage === null || saved.endTime === null) {
+                return null;
+            }
+            
+            let currentStage = saved.stage;
+            let currentEndTime = saved.endTime;
             const now = Date.now();
             
             // Пока текущее время больше времени окончания - проходим этапы
@@ -204,12 +218,13 @@
                 currentStage++;
                 
                 if (currentStage >= stages.length) {
-                    // Дошли до конца
-                    saveState(currentStage, 0, false);
+                    // Дошли до конца - таймер завершен навсегда
+                    saveState(stages.length, 0, false, true);
                     return {
-                        stage: currentStage,
+                        stage: stages.length,
                         endTime: 0,
-                        active: false
+                        active: false,
+                        completed: true
                     };
                 }
                 
@@ -217,20 +232,21 @@
                 currentEndTime = now + (stages[currentStage].duration * 1000);
             }
             
-            // Сохраняем обновленное состояние
-            saveState(currentStage, currentEndTime, true);
+            // Сохраняем обновленное состояние (не завершено)
+            saveState(currentStage, currentEndTime, true, false);
             
             return {
                 stage: currentStage,
                 endTime: currentEndTime,
-                active: true
+                active: true,
+                completed: false
             };
         }
         
         // =============================================
         // ИНИЦИАЛИЗАЦИЯ
         // =============================================
-        let currentStage, timerActive, endDateSmall;
+        let currentStage, timerActive, endDateSmall, timerCompleted;
         
         // Сначала обрабатываем этапы, которые прошли, пока сайт был закрыт
         const processedState = processStagesFromStorage();
@@ -239,14 +255,16 @@
             // Используем обработанное состояние
             currentStage = processedState.stage;
             timerActive = processedState.active;
+            timerCompleted = processedState.completed;
             endDateSmall = processedState.active ? new Date(processedState.endTime) : null;
         } else {
             // Нет сохраненного состояния - начинаем с первого этапа
             currentStage = 0;
             timerActive = true;
+            timerCompleted = false;
             endDateSmall = new Date();
             endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
-            saveState(currentStage, endDateSmall.getTime(), timerActive);
+            saveState(currentStage, endDateSmall.getTime(), timerActive, false);
         }
         
         // Инициализация верхнего таймера
@@ -262,15 +280,16 @@
             
             if (currentStage >= stages.length) {
                 timerActive = false;
+                timerCompleted = true;
                 endDateSmall = null;
-                saveState(currentStage, 0, timerActive);
+                saveState(stages.length, 0, false, true);
                 return;
             }
             
             const nextStage = stages[currentStage];
             endDateSmall = new Date();
             endDateSmall.setSeconds(endDateSmall.getSeconds() + nextStage.duration);
-            saveState(currentStage, endDateSmall.getTime(), timerActive);
+            saveState(currentStage, endDateSmall.getTime(), timerActive, false);
         }
         
         function updateCountdownLarge() {
@@ -299,7 +318,7 @@
         }
         
         function updateCountdownSmall() {
-            if (!timerActive) {
+            if (!timerActive || timerCompleted) {
                 document.getElementById('countdown-small').innerHTML = `
                     <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
