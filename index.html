@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 2 1 Project</title>
+    <title>##### 22 Project</title>
     <style>
         body {
             background: #000;
@@ -179,7 +179,7 @@
             // ТАЙМЕРЫ
             // =============================================
             
-            // Функция для получения даты окончания верхнего таймера
+            // Функция для получения даты окончания верхнего таймера (временно 1 минута)
             function getEndDateLarge() {
                 const date = new Date();
                 
@@ -192,8 +192,8 @@
                     date.setDate(date.getDate() + 1);
                 }
                 
-                // Добавляем 21 день
-                date.setDate(date.getDate() + 21);
+                // ВРЕМЕННО: добавляем 1 минуту вместо 21 дня
+                date.setMinutes(date.getMinutes() + 1);
                 
                 return date;
             }
@@ -217,23 +217,29 @@
                 const savedEndTime = localStorage.getItem('timerEndTime');
                 const savedActive = localStorage.getItem('timerActive');
                 const savedCompleted = localStorage.getItem('timerCompleted');
+                const savedLargeCompleted = localStorage.getItem('largeTimerCompleted');
+                const savedLargeEndTime = localStorage.getItem('largeTimerEndTime');
                 
                 return {
                     stage: savedStage !== null ? parseInt(savedStage) : null,
                     endTime: savedEndTime !== null ? parseInt(savedEndTime) : null,
                     active: savedActive !== null ? savedActive === 'true' : null,
-                    completed: savedCompleted !== null ? savedCompleted === 'true' : false
+                    completed: savedCompleted !== null ? savedCompleted === 'true' : false,
+                    largeCompleted: savedLargeCompleted !== null ? savedLargeCompleted === 'true' : false,
+                    largeEndTime: savedLargeEndTime !== null ? parseInt(savedLargeEndTime) : null
                 };
             }
             
             // =============================================
             // СОХРАНЕНИЕ СОСТОЯНИЯ
             // =============================================
-            function saveState(stage, endTime, active, completed) {
+            function saveState(stage, endTime, active, completed, largeCompleted, largeEndTime) {
                 if (stage !== null) localStorage.setItem('timerStage', stage.toString());
                 if (endTime !== null) localStorage.setItem('timerEndTime', endTime.toString());
                 if (active !== null) localStorage.setItem('timerActive', active.toString());
                 localStorage.setItem('timerCompleted', completed ? 'true' : 'false');
+                localStorage.setItem('largeTimerCompleted', largeCompleted ? 'true' : 'false');
+                if (largeEndTime !== null) localStorage.setItem('largeTimerEndTime', largeEndTime.toString());
             }
             
             // =============================================
@@ -263,7 +269,7 @@
                     currentStage++;
                     
                     if (currentStage >= stages.length) {
-                        saveState(stages.length, 0, false, true);
+                        saveState(stages.length, 0, false, true, saved.largeCompleted, saved.largeEndTime);
                         return {
                             stage: stages.length,
                             endTime: 0,
@@ -275,7 +281,7 @@
                     currentEndTime = now + (stages[currentStage].duration * 1000);
                 }
                 
-                saveState(currentStage, currentEndTime, true, false);
+                saveState(currentStage, currentEndTime, true, false, saved.largeCompleted, saved.largeEndTime);
                 
                 return {
                     stage: currentStage,
@@ -289,7 +295,43 @@
             // ИНИЦИАЛИЗАЦИЯ
             // =============================================
             let currentStage, timerActive, endDateSmall, timerCompleted;
+            let largeTimerCompleted = false;
+            let endDateLarge;
             
+            const saved = loadState();
+            
+            // Восстанавливаем состояние верхнего таймера
+            if (saved.largeCompleted) {
+                largeTimerCompleted = true;
+                endDateLarge = null;
+            } else if (saved.largeEndTime) {
+                endDateLarge = new Date(saved.largeEndTime);
+                // Проверяем, не истекло ли время
+                if (Date.now() >= saved.largeEndTime) {
+                    largeTimerCompleted = true;
+                    endDateLarge = null;
+                    saveState(
+                        saved.stage, 
+                        saved.endTime, 
+                        saved.active, 
+                        saved.completed, 
+                        true, 
+                        null
+                    );
+                }
+            } else {
+                endDateLarge = getEndDateLarge();
+                saveState(
+                    saved.stage, 
+                    saved.endTime, 
+                    saved.active, 
+                    saved.completed, 
+                    false, 
+                    endDateLarge.getTime()
+                );
+            }
+            
+            // Обрабатываем нижний таймер
             const processedState = processStagesFromStorage();
             
             if (processedState) {
@@ -303,10 +345,8 @@
                 timerCompleted = false;
                 endDateSmall = new Date();
                 endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
-                saveState(currentStage, endDateSmall.getTime(), timerActive, false);
+                saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
             }
-            
-            let endDateLarge = getEndDateLarge();
             
             function goToNextStage() {
                 const stage = stages[currentStage];
@@ -318,21 +358,56 @@
                     timerActive = false;
                     timerCompleted = true;
                     endDateSmall = null;
-                    saveState(stages.length, 0, false, true);
+                    saveState(stages.length, 0, false, true, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
                     return;
                 }
                 
                 const nextStage = stages[currentStage];
                 endDateSmall = new Date();
                 endDateSmall.setSeconds(endDateSmall.getSeconds() + nextStage.duration);
-                saveState(currentStage, endDateSmall.getTime(), timerActive, false);
+                saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
             }
             
             function updateCountdownLarge() {
+                // Если верхний таймер завершен - показываем нули
+                if (largeTimerCompleted) {
+                    document.getElementById('countdown-large').innerHTML = `
+                        <div class="unit"><div class="value-large">00</div></div>
+                        <div class="separator-large">:</div>
+                        <div class="unit"><div class="value-large">00</div></div>
+                        <div class="separator-large">:</div>
+                        <div class="unit"><div class="value-large">00</div></div>
+                        <div class="separator-large">:</div>
+                        <div class="unit"><div class="value-large">00</div></div>
+                    `;
+                    return;
+                }
+                
                 const now = new Date();
                 
+                // Проверяем, не закончился ли таймер
                 if (now >= endDateLarge) {
-                    endDateLarge = getEndDateLarge();
+                    largeTimerCompleted = true;
+                    endDateLarge = null;
+                    saveState(
+                        currentStage, 
+                        endDateSmall ? endDateSmall.getTime() : null, 
+                        timerActive, 
+                        timerCompleted, 
+                        true, 
+                        null
+                    );
+                    
+                    document.getElementById('countdown-large').innerHTML = `
+                        <div class="unit"><div class="value-large">00</div></div>
+                        <div class="separator-large">:</div>
+                        <div class="unit"><div class="value-large">00</div></div>
+                        <div class="separator-large">:</div>
+                        <div class="unit"><div class="value-large">00</div></div>
+                        <div class="separator-large">:</div>
+                        <div class="unit"><div class="value-large">00</div></div>
+                    `;
+                    return;
                 }
                 
                 const timeLeft = endDateLarge - now;
