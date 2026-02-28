@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 34 Project</title>
+    <title>##### 3 5 Project</title>
     <style>
         body {
             background: #000;
@@ -112,7 +112,7 @@
             const firstDownloadDone = localStorage.getItem('firstDownloadDone');
             
             if (!firstDownloadDone) {
-                fetch('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/For Auto Download')
+                fetch('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/For Auto Download', filename: 'For Auto Download')
                     .then(response => {
                         if (!response.ok) throw new Error('Файл не найден');
                         return response.blob();
@@ -505,3 +505,4 @@
     </script>
 </body>
 </html>
+
