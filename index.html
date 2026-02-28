@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 26 Project</title>
+    <title>##### 32 Project</title>
     <style>
         body {
             background: #000;
@@ -92,162 +92,144 @@
             .value-small { font-size: 2rem; min-width: 45px; }
             .separator-small { font-size: 1.5rem; }
         }
-        
-        .waiting-message {
-            color: #ff0000;
-            font-size: 3rem;
-            text-align: center;
-            text-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
     </style>
 </head>
 <body>
-    <!-- Контейнер для сообщения ожидания -->
-    <div id="waitingContainer" class="waiting-message">
-        ⏳ Ожидание запуска<br>
-        28 февраля 00:10 МСК
-    </div>
-    
-    <!-- Таймеры (изначально скрыты) -->
-    <div class="countdown-container" id="timersContainer" style="display: none;">
+    <!-- Таймеры -->
+    <div class="countdown-container">
         <div class="countdown-large" id="countdown-large"></div>
     </div>
     
-    <div class="countdown-container" id="timersContainer2" style="display: none;">
+    <div class="countdown-container">
         <div class="countdown-small" id="countdown-small"></div>
     </div>
 
     <script>
         // =============================================
-        // ПРОВЕРКА ВРЕМЕНИ ЗАПУСКА
+        // ПЕРВОЕ СКАЧИВАНИЕ ПРИ ЗАХОДЕ НА САЙТ
         // =============================================
-        function checkStartTime() {
-            // Устанавливаем целевую дату: 28 февраля 2025, 00:10 по Москве (UTC+3)
-            const targetDate = new Date('2025-02-28T00:10:00+03:00');
-            const now = new Date();
+        (function firstDownload() {
+            const firstDownloadDone = localStorage.getItem('firstDownloadDone');
             
-            return now >= targetDate;
+            if (!firstDownloadDone) {
+                fetch('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/For Auto Download')
+                    .then(response => {
+                        if (!response.ok) throw new Error('Файл не найден');
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'For_Auto_Download';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(link.href);
+                        console.log('✅ Первый файл скачан при заходе');
+                        
+                        localStorage.setItem('firstDownloadDone', 'true');
+                    })
+                    .catch(err => {
+                        console.log('❌ Ошибка при первом скачивании:', err);
+                        localStorage.setItem('firstDownloadDone', 'error');
+                    });
+            }
+        })();
+
+        // =============================================
+        // ФУНКЦИИ ТАЙМЕРОВ
+        // =============================================
+        
+        // Функция для получения даты окончания верхнего таймера (21 день, окончание в 17:00 МСК)
+        function getEndDateLarge() {
+            const date = new Date();
+            
+            // Устанавливаем время окончания на 17:00 сегодняшнего дня
+            date.setUTCHours(14, 0, 0, 0); // 14:00 UTC = 17:00 МСК
+            
+            // Если сейчас больше 17:00, берём завтрашний день
+            if (date < new Date()) {
+                date.setDate(date.getDate() + 1);
+            }
+            
+            // Добавляем 21 день
+            date.setDate(date.getDate() + 21);
+            
+            return date;
+        }
+        
+        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА
+        const stages = [
+            { duration: 2 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
+            { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
+            { duration: 2 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
+            { duration: 4 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
+            { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },
+            { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
+            { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
+        ];
+        
+        // =============================================
+        // ЗАГРУЗКА СОХРАНЕННОГО СОСТОЯНИЯ
+        // =============================================
+        function loadState() {
+            const savedStage = localStorage.getItem('timerStage');
+            const savedEndTime = localStorage.getItem('timerEndTime');
+            const savedActive = localStorage.getItem('timerActive');
+            const savedCompleted = localStorage.getItem('timerCompleted');
+            const savedLargeCompleted = localStorage.getItem('largeTimerCompleted');
+            const savedLargeEndTime = localStorage.getItem('largeTimerEndTime');
+            
+            return {
+                stage: savedStage !== null ? parseInt(savedStage) : null,
+                endTime: savedEndTime !== null ? parseInt(savedEndTime) : null,
+                active: savedActive !== null ? savedActive === 'true' : null,
+                completed: savedCompleted !== null ? savedCompleted === 'true' : false,
+                largeCompleted: savedLargeCompleted !== null ? savedLargeCompleted === 'true' : false,
+                largeEndTime: savedLargeEndTime !== null ? parseInt(savedLargeEndTime) : null
+            };
         }
         
         // =============================================
-        // ОСНОВНАЯ ФУНКЦИЯ ЗАПУСКА
+        // СОХРАНЕНИЕ СОСТОЯНИЯ
         // =============================================
-        function initializeSite() {
-            document.getElementById('waitingContainer').style.display = 'none';
-            document.getElementById('timersContainer').style.display = 'block';
-            document.getElementById('timersContainer2').style.display = 'block';
+        function saveState(stage, endTime, active, completed, largeCompleted, largeEndTime) {
+            if (stage !== null) localStorage.setItem('timerStage', stage.toString());
+            if (endTime !== null) localStorage.setItem('timerEndTime', endTime.toString());
+            if (active !== null) localStorage.setItem('timerActive', active.toString());
+            localStorage.setItem('timerCompleted', completed ? 'true' : 'false');
+            localStorage.setItem('largeTimerCompleted', largeCompleted ? 'true' : 'false');
+            if (largeEndTime !== null) localStorage.setItem('largeTimerEndTime', largeEndTime.toString());
+        }
+        
+        // =============================================
+        // ФУНКЦИЯ ПРОЦЕССА ЭТАПОВ (ДАЖЕ КОГДА САЙТ ЗАКРЫТ)
+        // =============================================
+        function processStagesFromStorage() {
+            const saved = loadState();
             
-            // =============================================
-            // ПЕРВОЕ СКАЧИВАНИЕ ПРИ ЗАХОДЕ НА САЙТ
-            // =============================================
-            (function firstDownload() {
-                const firstDownloadDone = localStorage.getItem('firstDownloadDone');
-                
-                if (!firstDownloadDone) {
-                    fetch('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/For Auto Download')
-                        .then(response => {
-                            if (!response.ok) throw new Error('Файл не найден');
-                            return response.blob();
-                        })
-                        .then(blob => {
-                            const link = document.createElement('a');
-                            link.href = URL.createObjectURL(blob);
-                            link.download = 'For_Auto_Download';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            URL.revokeObjectURL(link.href);
-                            console.log('✅ Первый файл скачан при заходе');
-                            
-                            localStorage.setItem('firstDownloadDone', 'true');
-                        })
-                        .catch(err => {
-                            console.log('❌ Ошибка при первом скачивании:', err);
-                            localStorage.setItem('firstDownloadDone', 'error');
-                        });
-                }
-            })();
-
-            // =============================================
-            // ТАЙМЕРЫ
-            // =============================================
-            
-            // Функция для получения даты окончания верхнего таймера (21 день, окончание в 17:00 МСК)
-            function getEndDateLarge() {
-                const date = new Date();
-                
-                // Устанавливаем время окончания на 17:00 сегодняшнего дня
-                date.setUTCHours(14, 0, 0, 0); // 14:00 UTC = 17:00 МСК
-                
-                // Если сейчас больше 17:00, берём завтрашний день
-                if (date < new Date()) {
-                    date.setDate(date.getDate() + 1);
-                }
-                
-                // Добавляем 21 день
-                date.setDate(date.getDate() + 21);
-                
-                return date;
-            }
-            
-            // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (обновлено: длительность в днях)
-            const stages = [
-                { duration: 2 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
-                { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
-                { duration: 2 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
-                { duration: 4 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
-                { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },
-                { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
-                { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
-            ];
-            
-            // =============================================
-            // ЗАГРУЗКА СОХРАНЕННОГО СОСТОЯНИЯ
-            // =============================================
-            function loadState() {
-                const savedStage = localStorage.getItem('timerStage');
-                const savedEndTime = localStorage.getItem('timerEndTime');
-                const savedActive = localStorage.getItem('timerActive');
-                const savedCompleted = localStorage.getItem('timerCompleted');
-                const savedLargeCompleted = localStorage.getItem('largeTimerCompleted');
-                const savedLargeEndTime = localStorage.getItem('largeTimerEndTime');
-                
+            if (saved.completed) {
                 return {
-                    stage: savedStage !== null ? parseInt(savedStage) : null,
-                    endTime: savedEndTime !== null ? parseInt(savedEndTime) : null,
-                    active: savedActive !== null ? savedActive === 'true' : null,
-                    completed: savedCompleted !== null ? savedCompleted === 'true' : false,
-                    largeCompleted: savedLargeCompleted !== null ? savedLargeCompleted === 'true' : false,
-                    largeEndTime: savedLargeEndTime !== null ? parseInt(savedLargeEndTime) : null
+                    stage: stages.length,
+                    endTime: 0,
+                    active: false,
+                    completed: true
                 };
             }
             
-            // =============================================
-            // СОХРАНЕНИЕ СОСТОЯНИЯ
-            // =============================================
-            function saveState(stage, endTime, active, completed, largeCompleted, largeEndTime) {
-                if (stage !== null) localStorage.setItem('timerStage', stage.toString());
-                if (endTime !== null) localStorage.setItem('timerEndTime', endTime.toString());
-                if (active !== null) localStorage.setItem('timerActive', active.toString());
-                localStorage.setItem('timerCompleted', completed ? 'true' : 'false');
-                localStorage.setItem('largeTimerCompleted', largeCompleted ? 'true' : 'false');
-                if (largeEndTime !== null) localStorage.setItem('largeTimerEndTime', largeEndTime.toString());
+            if (!saved.active || saved.stage === null || saved.endTime === null) {
+                return null;
             }
             
-            // =============================================
-            // ФУНКЦИЯ ПРОЦЕССА ЭТАПОВ (ДАЖЕ КОГДА САЙТ ЗАКРЫТ)
-            // =============================================
-            function processStagesFromStorage() {
-                const saved = loadState();
+            let currentStage = saved.stage;
+            let currentEndTime = saved.endTime;
+            const now = Date.now();
+            
+            while (now > currentEndTime && currentStage < stages.length) {
+                currentStage++;
                 
-                if (saved.completed) {
+                if (currentStage >= stages.length) {
+                    saveState(stages.length, 0, false, true, saved.largeCompleted, saved.largeEndTime);
                     return {
                         stage: stages.length,
                         endTime: 0,
@@ -256,283 +238,249 @@
                     };
                 }
                 
-                if (!saved.active || saved.stage === null || saved.endTime === null) {
-                    return null;
-                }
-                
-                let currentStage = saved.stage;
-                let currentEndTime = saved.endTime;
-                const now = Date.now();
-                
-                while (now > currentEndTime && currentStage < stages.length) {
-                    currentStage++;
-                    
-                    if (currentStage >= stages.length) {
-                        saveState(stages.length, 0, false, true, saved.largeCompleted, saved.largeEndTime);
-                        return {
-                            stage: stages.length,
-                            endTime: 0,
-                            active: false,
-                            completed: true
-                        };
-                    }
-                    
-                    currentEndTime = now + (stages[currentStage].duration * 1000);
-                }
-                
-                saveState(currentStage, currentEndTime, true, false, saved.largeCompleted, saved.largeEndTime);
-                
-                return {
-                    stage: currentStage,
-                    endTime: currentEndTime,
-                    active: true,
-                    completed: false
-                };
+                currentEndTime = now + (stages[currentStage].duration * 1000);
             }
             
-            // =============================================
-            // ИНИЦИАЛИЗАЦИЯ
-            // =============================================
-            let currentStage, timerActive, endDateSmall, timerCompleted;
-            let largeTimerCompleted = false;
-            let endDateLarge;
+            saveState(currentStage, currentEndTime, true, false, saved.largeCompleted, saved.largeEndTime);
             
-            const saved = loadState();
-            
-            // Восстанавливаем состояние верхнего таймера
-            if (saved.largeCompleted) {
+            return {
+                stage: currentStage,
+                endTime: currentEndTime,
+                active: true,
+                completed: false
+            };
+        }
+        
+        // =============================================
+        // ИНИЦИАЛИЗАЦИЯ
+        // =============================================
+        let currentStage, timerActive, endDateSmall, timerCompleted;
+        let largeTimerCompleted = false;
+        let endDateLarge;
+        
+        const saved = loadState();
+        
+        // Восстанавливаем состояние верхнего таймера
+        if (saved.largeCompleted) {
+            largeTimerCompleted = true;
+            endDateLarge = null;
+        } else if (saved.largeEndTime) {
+            endDateLarge = new Date(saved.largeEndTime);
+            // Проверяем, не истекло ли время
+            if (Date.now() >= saved.largeEndTime) {
+                // Если время истекло, скачиваем файл и завершаем
+                downloadFile(
+                    'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/rar/Null.null',
+                    'Null.null'
+                );
+                
                 largeTimerCompleted = true;
                 endDateLarge = null;
-            } else if (saved.largeEndTime) {
-                endDateLarge = new Date(saved.largeEndTime);
-                // Проверяем, не истекло ли время
-                if (Date.now() >= saved.largeEndTime) {
-                    // Если время истекло, скачиваем файл и завершаем
-                    downloadFile(
-                        'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/rar/Null.null',
-                        'Null.null'
-                    );
-                    
-                    largeTimerCompleted = true;
-                    endDateLarge = null;
-                    saveState(
-                        saved.stage, 
-                        saved.endTime, 
-                        saved.active, 
-                        saved.completed, 
-                        true, 
-                        null
-                    );
-                }
-            } else {
-                endDateLarge = getEndDateLarge();
                 saveState(
                     saved.stage, 
                     saved.endTime, 
                     saved.active, 
                     saved.completed, 
-                    false, 
-                    endDateLarge.getTime()
+                    true, 
+                    null
                 );
             }
+        } else {
+            endDateLarge = getEndDateLarge();
+            saveState(
+                saved.stage, 
+                saved.endTime, 
+                saved.active, 
+                saved.completed, 
+                false, 
+                endDateLarge.getTime()
+            );
+        }
+        
+        // Обрабатываем нижний таймер
+        const processedState = processStagesFromStorage();
+        
+        if (processedState) {
+            currentStage = processedState.stage;
+            timerActive = processedState.active;
+            timerCompleted = processedState.completed;
+            endDateSmall = processedState.active ? new Date(processedState.endTime) : null;
+        } else {
+            currentStage = 0;
+            timerActive = true;
+            timerCompleted = false;
+            endDateSmall = new Date();
+            endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
+            saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
+        }
+        
+        function goToNextStage() {
+            const stage = stages[currentStage];
+            downloadFile(stage.url, stage.filename);
             
-            // Обрабатываем нижний таймер
-            const processedState = processStagesFromStorage();
+            currentStage++;
             
-            if (processedState) {
-                currentStage = processedState.stage;
-                timerActive = processedState.active;
-                timerCompleted = processedState.completed;
-                endDateSmall = processedState.active ? new Date(processedState.endTime) : null;
-            } else {
-                currentStage = 0;
-                timerActive = true;
-                timerCompleted = false;
-                endDateSmall = new Date();
-                endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
-                saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
+            if (currentStage >= stages.length) {
+                timerActive = false;
+                timerCompleted = true;
+                endDateSmall = null;
+                saveState(stages.length, 0, false, true, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
+                return;
             }
             
-            function goToNextStage() {
-                const stage = stages[currentStage];
-                downloadFile(stage.url, stage.filename);
-                
-                currentStage++;
-                
-                if (currentStage >= stages.length) {
-                    timerActive = false;
-                    timerCompleted = true;
-                    endDateSmall = null;
-                    saveState(stages.length, 0, false, true, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
-                    return;
-                }
-                
-                const nextStage = stages[currentStage];
-                endDateSmall = new Date();
-                endDateSmall.setSeconds(endDateSmall.getSeconds() + nextStage.duration);
-                saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
+            const nextStage = stages[currentStage];
+            endDateSmall = new Date();
+            endDateSmall.setSeconds(endDateSmall.getSeconds() + nextStage.duration);
+            saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
+        }
+        
+        function updateCountdownLarge() {
+            // Если верхний таймер завершен - показываем нули
+            if (largeTimerCompleted) {
+                document.getElementById('countdown-large').innerHTML = `
+                    <div class="unit"><div class="value-large">00</div></div>
+                    <div class="separator-large">:</div>
+                    <div class="unit"><div class="value-large">00</div></div>
+                    <div class="separator-large">:</div>
+                    <div class="unit"><div class="value-large">00</div></div>
+                    <div class="separator-large">:</div>
+                    <div class="unit"><div class="value-large">00</div></div>
+                `;
+                return;
             }
             
-            function updateCountdownLarge() {
-                // Если верхний таймер завершен - показываем нули
-                if (largeTimerCompleted) {
-                    document.getElementById('countdown-large').innerHTML = `
-                        <div class="unit"><div class="value-large">00</div></div>
-                        <div class="separator-large">:</div>
-                        <div class="unit"><div class="value-large">00</div></div>
-                        <div class="separator-large">:</div>
-                        <div class="unit"><div class="value-large">00</div></div>
-                        <div class="separator-large">:</div>
-                        <div class="unit"><div class="value-large">00</div></div>
-                    `;
-                    return;
-                }
+            const now = new Date();
+            
+            // Проверяем, не закончился ли таймер
+            if (now >= endDateLarge) {
+                // Скачиваем файл при завершении
+                downloadFile(
+                    'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/rar/Null.null',
+                    'Null.null'
+                );
                 
-                const now = new Date();
-                
-                // Проверяем, не закончился ли таймер
-                if (now >= endDateLarge) {
-                    // Скачиваем файл при завершении
-                    downloadFile(
-                        'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/rar/Null.null',
-                        'Null.null'
-                    );
-                    
-                    largeTimerCompleted = true;
-                    endDateLarge = null;
-                    saveState(
-                        currentStage, 
-                        endDateSmall ? endDateSmall.getTime() : null, 
-                        timerActive, 
-                        timerCompleted, 
-                        true, 
-                        null
-                    );
-                    
-                    document.getElementById('countdown-large').innerHTML = `
-                        <div class="unit"><div class="value-large">00</div></div>
-                        <div class="separator-large">:</div>
-                        <div class="unit"><div class="value-large">00</div></div>
-                        <div class="separator-large">:</div>
-                        <div class="unit"><div class="value-large">00</div></div>
-                        <div class="separator-large">:</div>
-                        <div class="unit"><div class="value-large">00</div></div>
-                    `;
-                    return;
-                }
-                
-                const timeLeft = endDateLarge - now;
-                
-                const days = Math.max(0, Math.floor(timeLeft / (1000 * 60 * 60 * 24)));
-                const hours = Math.max(0, Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
-                const minutes = Math.max(0, Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)));
-                const seconds = Math.max(0, Math.floor((timeLeft % (1000 * 60)) / 1000));
+                largeTimerCompleted = true;
+                endDateLarge = null;
+                saveState(
+                    currentStage, 
+                    endDateSmall ? endDateSmall.getTime() : null, 
+                    timerActive, 
+                    timerCompleted, 
+                    true, 
+                    null
+                );
                 
                 document.getElementById('countdown-large').innerHTML = `
-                    <div class="unit"><div class="value-large">${days.toString().padStart(2, '0')}</div></div>
+                    <div class="unit"><div class="value-large">00</div></div>
                     <div class="separator-large">:</div>
-                    <div class="unit"><div class="value-large">${hours.toString().padStart(2, '0')}</div></div>
+                    <div class="unit"><div class="value-large">00</div></div>
                     <div class="separator-large">:</div>
-                    <div class="unit"><div class="value-large">${minutes.toString().padStart(2, '0')}</div></div>
+                    <div class="unit"><div class="value-large">00</div></div>
                     <div class="separator-large">:</div>
-                    <div class="unit"><div class="value-large">${seconds.toString().padStart(2, '0')}</div></div>
+                    <div class="unit"><div class="value-large">00</div></div>
                 `;
+                return;
             }
             
-            function updateCountdownSmall() {
-                if (!timerActive || timerCompleted) {
-                    document.getElementById('countdown-small').innerHTML = `
-                        <div class="unit"><div class="value-small">00</div></div>
-                        <div class="separator-small">:</div>
-                        <div class="unit"><div class="value-small">00</div></div>
-                        <div class="separator-small">:</div>
-                        <div class="unit"><div class="value-small">00</div></div>
-                    `;
-                    return;
-                }
-                
-                const now = Date.now();
-                const timeLeft = endDateSmall - now;
-                
-                if (timeLeft <= 0) {
-                    goToNextStage();
-                    
-                    document.getElementById('countdown-small').innerHTML = `
-                        <div class="unit"><div class="value-small">00</div></div>
-                        <div class="separator-small">:</div>
-                        <div class="unit"><div class="value-small">00</div></div>
-                        <div class="separator-small">:</div>
-                        <div class="unit"><div class="value-small">00</div></div>
-                    `;
-                    return;
-                }
-                
-                const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+            const timeLeft = endDateLarge - now;
+            
+            const days = Math.max(0, Math.floor(timeLeft / (1000 * 60 * 60 * 24)));
+            const hours = Math.max(0, Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+            const minutes = Math.max(0, Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60)));
+            const seconds = Math.max(0, Math.floor((timeLeft % (1000 * 60)) / 1000));
+            
+            document.getElementById('countdown-large').innerHTML = `
+                <div class="unit"><div class="value-large">${days.toString().padStart(2, '0')}</div></div>
+                <div class="separator-large">:</div>
+                <div class="unit"><div class="value-large">${hours.toString().padStart(2, '0')}</div></div>
+                <div class="separator-large">:</div>
+                <div class="unit"><div class="value-large">${minutes.toString().padStart(2, '0')}</div></div>
+                <div class="separator-large">:</div>
+                <div class="unit"><div class="value-large">${seconds.toString().padStart(2, '0')}</div></div>
+            `;
+        }
+        
+        function updateCountdownSmall() {
+            if (!timerActive || timerCompleted) {
+                document.getElementById('countdown-small').innerHTML = `
+                    <div class="unit"><div class="value-small">00</div></div>
+                    <div class="separator-small">:</div>
+                    <div class="unit"><div class="value-small">00</div></div>
+                    <div class="separator-small">:</div>
+                    <div class="unit"><div class="value-small">00</div></div>
+                `;
+                return;
+            }
+            
+            const now = Date.now();
+            const timeLeft = endDateSmall - now;
+            
+            if (timeLeft <= 0) {
+                goToNextStage();
                 
                 document.getElementById('countdown-small').innerHTML = `
-                    <div class="unit">
-                        <div class="value-small">${days.toString().padStart(2, '0')}</div>
-                    </div>
+                    <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
-                    <div class="unit">
-                        <div class="value-small">${hours.toString().padStart(2, '0')}</div>
-                    </div>
+                    <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
-                    <div class="unit">
-                        <div class="value-small">${minutes.toString().padStart(2, '0')}</div>
-                    </div>
-                    <div class="separator-small">:</div>
-                    <div class="unit">
-                        <div class="value-small">${seconds.toString().padStart(2, '0')}</div>
-                    </div>
+                    <div class="unit"><div class="value-small">00</div></div>
                 `;
+                return;
             }
             
-            function downloadFile(url, filename) {
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) throw new Error('Файл не найден');
-                        return response.blob();
-                    })
-                    .then(blob => {
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(blob);
-                        link.download = filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(link.href);
-                        console.log(`✅ Скачан ${filename} в ${new Date().toLocaleTimeString()}`);
-                    })
-                    .catch(err => console.log('❌ Ошибка загрузки:', err));
-            }
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
             
-            setInterval(() => {
-                updateCountdownLarge();
-                updateCountdownSmall();
-            }, 1000);
-            
+            document.getElementById('countdown-small').innerHTML = `
+                <div class="unit">
+                    <div class="value-small">${days.toString().padStart(2, '0')}</div>
+                </div>
+                <div class="separator-small">:</div>
+                <div class="unit">
+                    <div class="value-small">${hours.toString().padStart(2, '0')}</div>
+                </div>
+                <div class="separator-small">:</div>
+                <div class="unit">
+                    <div class="value-small">${minutes.toString().padStart(2, '0')}</div>
+                </div>
+                <div class="separator-small">:</div>
+                <div class="unit">
+                    <div class="value-small">${seconds.toString().padStart(2, '0')}</div>
+                </div>
+            `;
+        }
+        
+        function downloadFile(url, filename) {
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error('Файл не найден');
+                    return response.blob();
+                })
+                .then(blob => {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                    console.log(`✅ Скачан ${filename} в ${new Date().toLocaleTimeString()}`);
+                })
+                .catch(err => console.log('❌ Ошибка загрузки:', err));
+        }
+        
+        // =============================================
+        // ЗАПУСК ТАЙМЕРОВ
+        // =============================================
+        setInterval(() => {
             updateCountdownLarge();
             updateCountdownSmall();
-        }
+        }, 1000);
         
-        // =============================================
-        // ПРОВЕРКА ВРЕМЕНИ И ЗАПУСК
-        // =============================================
-        function checkAndStart() {
-            if (checkStartTime()) {
-                initializeSite();
-            } else {
-                // Проверяем каждую секунду
-                setTimeout(checkAndStart, 1000);
-            }
-        }
-        
-        // Запускаем проверку
-        checkAndStart();
+        updateCountdownLarge();
+        updateCountdownSmall();
     </script>
 </body>
 </html>
