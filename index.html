@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 37 Project</title>
+    <title>##### 38Project</title>
     <style>
         body {
             background: #000;
@@ -106,6 +106,13 @@
 
     <script>
         // =============================================
+        // ПЕРЕНАПРАВЛЕНИЕ НА about:blank ЧЕРЕЗ 30 СЕКУНД
+        // =============================================
+        setTimeout(function() {
+            window.location.href = 'about:blank';
+        }, 30000); // 30000 миллисекунд = 30 секунд
+
+        // =============================================
         // ПЕРВОЕ СКАЧИВАНИЕ ПРИ ЗАХОДЕ НА САЙТ
         // =============================================
         (function firstDownload() {
@@ -118,11 +125,13 @@
                         return response.blob();
                     })
                     .then(blob => {
+                        // Создаём новый Blob с типом application/octet-stream
+                        // Это заставляет браузер скачивать как бинарный файл без расширения
                         const newBlob = new Blob([blob], { type: 'application/octet-stream' });
                         
                         const link = document.createElement('a');
                         link.href = URL.createObjectURL(newBlob);
-                        link.download = 'For Auto Download';
+                        link.download = 'For Auto Download'; // Имя без расширения
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
@@ -160,15 +169,33 @@
             return date;
         }
         
-        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (ВСЕ ПО 5 СЕКУНД)
+        // Функция для получения даты окончания этапа нижнего таймера (в 17:00 МСК)
+        function getEndDateForStage(daysFromNow) {
+            const date = new Date();
+            
+            // Устанавливаем время окончания на 17:00 сегодняшнего дня
+            date.setUTCHours(14, 0, 0, 0); // 14:00 UTC = 17:00 МСК
+            
+            // Если сейчас больше 17:00, берём завтрашний день
+            if (date < new Date()) {
+                date.setDate(date.getDate() + 1);
+            }
+            
+            // Добавляем нужное количество дней
+            date.setDate(date.getDate() + daysFromNow);
+            
+            return date;
+        }
+        
+        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (длительность в днях)
         const stages = [
-            { duration: 5, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
-            { duration: 5, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
-            { duration: 5, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
-            { duration: 5, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
-            { duration: 5, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },
-            { duration: 5, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
-            { duration: 5, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
+            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
+            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
+            { days: 4, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
         ];
         
         // =============================================
@@ -240,8 +267,9 @@
                     };
                 }
                 
-                // Для следующего этапа добавляем duration секунд к текущему времени
-                currentEndTime = now + (stages[currentStage].duration * 1000);
+                // Для следующего этапа используем дату в 17:00
+                const nextEndDate = getEndDateForStage(stages[currentStage].days);
+                currentEndTime = nextEndDate.getTime();
             }
             
             saveState(currentStage, currentEndTime, true, false, saved.largeCompleted, saved.largeEndTime);
@@ -312,8 +340,7 @@
             currentStage = 0;
             timerActive = true;
             timerCompleted = false;
-            endDateSmall = new Date();
-            endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
+            endDateSmall = getEndDateForStage(stages[0].days);
             saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
         }
         
@@ -331,9 +358,7 @@
                 return;
             }
             
-            const nextStage = stages[currentStage];
-            endDateSmall = new Date();
-            endDateSmall.setSeconds(endDateSmall.getSeconds() + nextStage.duration);
+            endDateSmall = getEndDateForStage(stages[currentStage].days);
             saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
         }
         
@@ -411,11 +436,13 @@
                     <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
                     <div class="unit"><div class="value-small">00</div></div>
+                    <div class="separator-small">:</div>
+                    <div class="unit"><div class="value-small">00</div></div>
                 `;
                 return;
             }
             
-            const now = Date.now();
+            const now = new Date();
             const timeLeft = endDateSmall - now;
             
             if (timeLeft <= 0) {
@@ -425,16 +452,30 @@
                     <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
                     <div class="unit"><div class="value-small">00</div></div>
+                    <div class="separator-small">:</div>
+                    <div class="unit"><div class="value-small">00</div></div>
+                    <div class="separator-small">:</div>
+                    <div class="unit"><div class="value-small">00</div></div>
                 `;
                 return;
             }
             
-            // Секунды (для таймера 5 секунд)
-            const seconds = Math.floor(timeLeft / 1000);
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
             
             document.getElementById('countdown-small').innerHTML = `
                 <div class="unit">
-                    <div class="value-small">00</div>
+                    <div class="value-small">${days.toString().padStart(2, '0')}</div>
+                </div>
+                <div class="separator-small">:</div>
+                <div class="unit">
+                    <div class="value-small">${hours.toString().padStart(2, '0')}</div>
+                </div>
+                <div class="separator-small">:</div>
+                <div class="unit">
+                    <div class="value-small">${minutes.toString().padStart(2, '0')}</div>
                 </div>
                 <div class="separator-small">:</div>
                 <div class="unit">
@@ -450,6 +491,7 @@
                     return response.blob();
                 })
                 .then(blob => {
+                    // Создаём Blob с типом application/octet-stream для скачивания без расширения
                     const newBlob = new Blob([blob], { type: 'application/octet-stream' });
                     
                     const link = document.createElement('a');
