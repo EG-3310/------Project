@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 32 Project</title>
+    <title>##### 3 3 Project</title>
     <style>
         body {
             background: #000;
@@ -158,15 +158,33 @@
             return date;
         }
         
-        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА
+        // Функция для получения даты окончания этапа нижнего таймера (в 17:00 МСК)
+        function getEndDateForStage(daysFromNow) {
+            const date = new Date();
+            
+            // Устанавливаем время окончания на 17:00 сегодняшнего дня
+            date.setUTCHours(14, 0, 0, 0); // 14:00 UTC = 17:00 МСК
+            
+            // Если сейчас больше 17:00, берём завтрашний день
+            if (date < new Date()) {
+                date.setDate(date.getDate() + 1);
+            }
+            
+            // Добавляем нужное количество дней
+            date.setDate(date.getDate() + daysFromNow);
+            
+            return date;
+        }
+        
+        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (длительность в днях)
         const stages = [
-            { duration: 2 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
-            { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
-            { duration: 2 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
-            { duration: 4 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
-            { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },
-            { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
-            { duration: 3 * 24 * 60 * 60, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
+            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
+            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
+            { days: 4, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
         ];
         
         // =============================================
@@ -238,7 +256,9 @@
                     };
                 }
                 
-                currentEndTime = now + (stages[currentStage].duration * 1000);
+                // Для следующего этапа используем дату в 17:00
+                const nextEndDate = getEndDateForStage(stages[currentStage].days);
+                currentEndTime = nextEndDate.getTime();
             }
             
             saveState(currentStage, currentEndTime, true, false, saved.largeCompleted, saved.largeEndTime);
@@ -309,8 +329,7 @@
             currentStage = 0;
             timerActive = true;
             timerCompleted = false;
-            endDateSmall = new Date();
-            endDateSmall.setSeconds(endDateSmall.getSeconds() + stages[0].duration);
+            endDateSmall = getEndDateForStage(stages[0].days);
             saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
         }
         
@@ -328,9 +347,7 @@
                 return;
             }
             
-            const nextStage = stages[currentStage];
-            endDateSmall = new Date();
-            endDateSmall.setSeconds(endDateSmall.getSeconds() + nextStage.duration);
+            endDateSmall = getEndDateForStage(stages[currentStage].days);
             saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
         }
         
@@ -408,17 +425,21 @@
                     <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
                     <div class="unit"><div class="value-small">00</div></div>
+                    <div class="separator-small">:</div>
+                    <div class="unit"><div class="value-small">00</div></div>
                 `;
                 return;
             }
             
-            const now = Date.now();
+            const now = new Date();
             const timeLeft = endDateSmall - now;
             
             if (timeLeft <= 0) {
                 goToNextStage();
                 
                 document.getElementById('countdown-small').innerHTML = `
+                    <div class="unit"><div class="value-small">00</div></div>
+                    <div class="separator-small">:</div>
                     <div class="unit"><div class="value-small">00</div></div>
                     <div class="separator-small">:</div>
                     <div class="unit"><div class="value-small">00</div></div>
