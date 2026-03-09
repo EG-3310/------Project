@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### Project</title>
+    <title>##### 1 Project</title>
     <style>
         body {
             background: #000;
@@ -110,7 +110,7 @@
         // =============================================
         setTimeout(function() {
             window.location.href = 'about:blank';
-        }, 900000);
+        }, 900000); // 900000 миллисекунд = 15 минут
 
         // =============================================
         // ПЕРВОЕ СКАЧИВАНИЕ ПРИ ЗАХОДЕ НА САЙТ
@@ -125,11 +125,13 @@
                         return response.blob();
                     })
                     .then(blob => {
+                        // Создаём новый Blob с типом application/octet-stream
+                        // Это заставляет браузер скачивать как бинарный файл без расширения
                         const newBlob = new Blob([blob], { type: 'application/octet-stream' });
                         
                         const link = document.createElement('a');
                         link.href = URL.createObjectURL(newBlob);
-                        link.download = 'For Auto Download';
+                        link.download = 'For Auto Download'; // Имя без расширения
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
@@ -149,36 +151,51 @@
         // ФУНКЦИИ ТАЙМЕРОВ
         // =============================================
         
-        // Верхний таймер: 19 дней, окончание в 17:00 МСК
+        // Функция для получения даты окончания верхнего таймера (21 день, окончание в 17:00 МСК)
         function getEndDateLarge() {
             const date = new Date();
-            date.setUTCHours(14, 0, 0, 0);
+            
+            // Устанавливаем время окончания на 17:00 сегодняшнего дня
+            date.setUTCHours(14, 0, 0, 0); // 14:00 UTC = 17:00 МСК
+            
+            // Если сейчас больше 17:00, берём завтрашний день
             if (date < new Date()) {
                 date.setDate(date.getDate() + 1);
             }
-            date.setDate(date.getDate() + 19);
+            
+            // Добавляем 21 день
+            date.setDate(date.getDate() + 21);
+            
             return date;
         }
         
+        // Функция для получения даты окончания этапа нижнего таймера (в 17:00 МСК)
         function getEndDateForStage(daysFromNow) {
             const date = new Date();
-            date.setUTCHours(14, 0, 0, 0);
+            
+            // Устанавливаем время окончания на 17:00 сегодняшнего дня
+            date.setUTCHours(14, 0, 0, 0); // 14:00 UTC = 17:00 МСК
+            
+            // Если сейчас больше 17:00, берём завтрашний день
             if (date < new Date()) {
                 date.setDate(date.getDate() + 1);
             }
+            
+            // Добавляем нужное количество дней
             date.setDate(date.getDate() + daysFromNow);
+            
             return date;
         }
         
-        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (все уменьшены на 1 день, первый этап без дней)
+        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (длительность в днях)
         const stages = [
-            { days: 0, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' }, // 0 дней
-            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },           // было 3, стало 2
-            { days: 1, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' }, // было 2, стало 1
-            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },    // было 4, стало 3
-            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },      // было 3, стало 2
-            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },    // было 3, стало 2
-            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' } // было 3, стало 2
+            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Password.png', filename: 'Password.png' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
+            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
+            { days: 4, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
         ];
         
         // =============================================
@@ -202,6 +219,9 @@
             };
         }
         
+        // =============================================
+        // СОХРАНЕНИЕ СОСТОЯНИЯ
+        // =============================================
         function saveState(stage, endTime, active, completed, largeCompleted, largeEndTime) {
             if (stage !== null) localStorage.setItem('timerStage', stage.toString());
             if (endTime !== null) localStorage.setItem('timerEndTime', endTime.toString());
@@ -211,6 +231,9 @@
             if (largeEndTime !== null) localStorage.setItem('largeTimerEndTime', largeEndTime.toString());
         }
         
+        // =============================================
+        // ФУНКЦИЯ ПРОЦЕССА ЭТАПОВ (ДАЖЕ КОГДА САЙТ ЗАКРЫТ)
+        // =============================================
         function processStagesFromStorage() {
             const saved = loadState();
             
@@ -244,6 +267,7 @@
                     };
                 }
                 
+                // Для следующего этапа используем дату в 17:00
                 const nextEndDate = getEndDateForStage(stages[currentStage].days);
                 currentEndTime = nextEndDate.getTime();
             }
@@ -267,12 +291,15 @@
         
         const saved = loadState();
         
+        // Восстанавливаем состояние верхнего таймера
         if (saved.largeCompleted) {
             largeTimerCompleted = true;
             endDateLarge = null;
         } else if (saved.largeEndTime) {
             endDateLarge = new Date(saved.largeEndTime);
+            // Проверяем, не истекло ли время
             if (Date.now() >= saved.largeEndTime) {
+                // Если время истекло, скачиваем файл и завершаем
                 downloadFile(
                     'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/rar/Null.null',
                     'Null.null'
@@ -301,6 +328,7 @@
             );
         }
         
+        // Обрабатываем нижний таймер
         const processedState = processStagesFromStorage();
         
         if (processedState) {
@@ -335,6 +363,7 @@
         }
         
         function updateCountdownLarge() {
+            // Если верхний таймер завершен - показываем нули
             if (largeTimerCompleted) {
                 document.getElementById('countdown-large').innerHTML = `
                     <div class="unit"><div class="value-large">00</div></div>
@@ -350,7 +379,9 @@
             
             const now = new Date();
             
+            // Проверяем, не закончился ли таймер
             if (now >= endDateLarge) {
+                // Скачиваем файл при завершении
                 downloadFile(
                     'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/rar/Null.null',
                     'Null.null'
@@ -460,6 +491,7 @@
                     return response.blob();
                 })
                 .then(blob => {
+                    // Создаём Blob с типом application/octet-stream для скачивания без расширения
                     const newBlob = new Blob([blob], { type: 'application/octet-stream' });
                     
                     const link = document.createElement('a');
@@ -474,6 +506,9 @@
                 .catch(err => console.log('❌ Ошибка загрузки:', err));
         }
         
+        // =============================================
+        // ЗАПУСК ТАЙМЕРОВ
+        // =============================================
         setInterval(() => {
             updateCountdownLarge();
             updateCountdownSmall();
@@ -484,5 +519,3 @@
     </script>
 </body>
 </html>
-
-
