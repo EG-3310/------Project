@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>##### 2 Project</title>
+    <title>##### Project</title>
     <style>
         body {
             background: #000;
@@ -152,47 +152,32 @@
         // Верхний таймер: 18 дней, окончание в 17:00 МСК
         function getEndDateLarge() {
             const date = new Date();
-            
-            // Устанавливаем время окончания на 17:00 сегодняшнего дня
             date.setUTCHours(14, 0, 0, 0);
-            
-            // Если сейчас больше 17:00, берём завтрашний день
             if (date < new Date()) {
                 date.setDate(date.getDate() + 1);
             }
-            
-            // Добавляем 18 дней
             date.setDate(date.getDate() + 18);
-            
             return date;
         }
         
-        // Функция для получения даты окончания этапа нижнего таймера (в 17:00 МСК)
         function getEndDateForStage(daysFromNow) {
             const date = new Date();
-            
-            // Устанавливаем время окончания на 17:00 сегодняшнего дня
             date.setUTCHours(14, 0, 0, 0);
-            
-            // Если сейчас больше 17:00, берём завтрашний день
             if (date < new Date()) {
                 date.setDate(date.getDate() + 1);
             }
-            
-            // Добавляем нужное количество дней
             date.setDate(date.getDate() + daysFromNow);
-            
             return date;
         }
         
-        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (удалён первый этап)
+        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (ВСЕ УМЕНЬШЕНЫ НА 1 ДЕНЬ)
         const stages = [
-            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },
-            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' },
-            { days: 4, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },
-            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },
-            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },
-            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' }
+            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Is.png', filename: 'Is.png' },        // было 3, стало 2
+            { days: 1, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/mp3/Null.null', filename: 'Null.null' }, // было 2, стало 1
+            { days: 3, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/A.F.E..jpg', filename: 'A.F.E..jpg' },    // было 4, стало 3
+            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/Null.null', filename: 'Null.null' },      // было 3, стало 2
+            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/txt/Null.rar', filename: 'Null.rar' },    // было 3, стало 2
+            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/I\'m so sorry', filename: 'Im so sorry' } // было 3, стало 2
         ];
         
         // =============================================
