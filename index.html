@@ -6,7 +6,8 @@
     <title>##### Project</title>
     <style>
         body {
-            background: #000;
+            background: url('bg.jpg') no-repeat center center fixed;
+            background-size: cover;
             color: #ff0000;
             font-family: Arial, sans-serif;
             margin: 0;
@@ -149,7 +150,7 @@
         // ФУНКЦИИ ТАЙМЕРОВ
         // =============================================
         
-        // Верхний таймер: 18 дней, окончание в 17:00 МСК
+        // Верхний таймер: 12 дней, окончание в 17:00 МСК
         function getEndDateLarge() {
             const date = new Date();
             date.setUTCHours(14, 0, 0, 0);
@@ -159,7 +160,7 @@
             date.setDate(date.getDate() + 3);
             return date;
         }
-        
+
         function getEndDateForStage(daysFromNow) {
             const date = new Date();
             date.setUTCHours(14, 0, 0, 0);
@@ -170,9 +171,9 @@
             return date;
         }
         
-        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА (УБРАН ПЕРВЫЙ ЭТАП Is.png)
+        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА
         const stages = [
-            { days: 1, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/1/I\'m%20so%20sorry', filename: 'Im so sorry' }
+            { days: 2, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/1/I\'m%20so%20sorry', filename: 'Im so sorry' }
         ];
         
         // =============================================
