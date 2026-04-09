@@ -114,220 +114,59 @@
         }, 900000);
 
         // =============================================
-        // ПЕРВОЕ СКАЧИВАНИЕ ПРИ ЗАХОДЕ НА САЙТ
-        // =============================================
-        (function firstDownload() {
-            const firstDownloadDone = localStorage.getItem('firstDownloadDone');
-            
-            if (!firstDownloadDone) {
-                fetch('https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/For Auto Download')
-                    .then(response => {
-                        if (!response.ok) throw new Error('Файл не найден');
-                        return response.blob();
-                    })
-                    .then(blob => {
-                        const newBlob = new Blob([blob], { type: 'application/octet-stream' });
-                        
-                        const link = document.createElement('a');
-                        link.href = URL.createObjectURL(newBlob);
-                        link.download = 'For Auto Download';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(link.href);
-                        console.log('✅ Первый файл скачан при заходе');
-                        
-                        localStorage.setItem('firstDownloadDone', 'true');
-                    })
-                    .catch(err => {
-                        console.log('❌ Ошибка при первом скачивании:', err);
-                        localStorage.setItem('firstDownloadDone', 'error');
-                    });
-            }
-        })();
-
-        // =============================================
         // ФУНКЦИИ ТАЙМЕРОВ
         // =============================================
         
-        // Верхний таймер: 12 дней, окончание в 17:00 МСК
+        // Верхний таймер: 1 день, окончание в 20:00 МСК
         function getEndDateLarge() {
             const date = new Date();
-            date.setUTCHours(14, 0, 0, 0);
+            date.setUTCHours(17, 0, 0, 0);
             if (date < new Date()) {
                 date.setDate(date.getDate() + 1);
             }
-            date.setDate(date.getDate() + 2);
+            date.setDate(date.getDate() + 1);
             return date;
-        }
-
-        function getEndDateForStage(daysFromNow) {
-            const date = new Date();
-            date.setUTCHours(14, 0, 0, 0);
-            if (date < new Date()) {
-                date.setDate(date.getDate() + 1);
-            }
-            date.setDate(date.getDate() + daysFromNow);
-            return date;
-        }
-        
-        // ПОСЛЕДОВАТЕЛЬНОСТЬ ДЛЯ НИЖНЕГО ТАЙМЕРА
-        const stages = [
-            { days: 0, url: 'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/1/I\'m%20so%20sorry', filename: 'Im so sorry' }
-        ];
-        
-        // =============================================
-        // ЗАГРУЗКА СОХРАНЕННОГО СОСТОЯНИЯ
-        // =============================================
-        function loadState() {
-            const savedStage = localStorage.getItem('timerStage');
-            const savedEndTime = localStorage.getItem('timerEndTime');
-            const savedActive = localStorage.getItem('timerActive');
-            const savedCompleted = localStorage.getItem('timerCompleted');
-            const savedLargeCompleted = localStorage.getItem('largeTimerCompleted');
-            const savedLargeEndTime = localStorage.getItem('largeTimerEndTime');
-            
-            return {
-                stage: savedStage !== null ? parseInt(savedStage) : null,
-                endTime: savedEndTime !== null ? parseInt(savedEndTime) : null,
-                active: savedActive !== null ? savedActive === 'true' : null,
-                completed: savedCompleted !== null ? savedCompleted === 'true' : false,
-                largeCompleted: savedLargeCompleted !== null ? savedLargeCompleted === 'true' : false,
-                largeEndTime: savedLargeEndTime !== null ? parseInt(savedLargeEndTime) : null
-            };
-        }
-        
-        function saveState(stage, endTime, active, completed, largeCompleted, largeEndTime) {
-            if (stage !== null) localStorage.setItem('timerStage', stage.toString());
-            if (endTime !== null) localStorage.setItem('timerEndTime', endTime.toString());
-            if (active !== null) localStorage.setItem('timerActive', active.toString());
-            localStorage.setItem('timerCompleted', completed ? 'true' : 'false');
-            localStorage.setItem('largeTimerCompleted', largeCompleted ? 'true' : 'false');
-            if (largeEndTime !== null) localStorage.setItem('largeTimerEndTime', largeEndTime.toString());
-        }
-        
-        function processStagesFromStorage() {
-            const saved = loadState();
-            
-            if (saved.completed) {
-                return {
-                    stage: stages.length,
-                    endTime: 0,
-                    active: false,
-                    completed: true
-                };
-            }
-            
-            if (!saved.active || saved.stage === null || saved.endTime === null) {
-                return null;
-            }
-            
-            let currentStage = saved.stage;
-            let currentEndTime = saved.endTime;
-            const now = Date.now();
-            
-            while (now > currentEndTime && currentStage < stages.length) {
-                currentStage++;
-                
-                if (currentStage >= stages.length) {
-                    saveState(stages.length, 0, false, true, saved.largeCompleted, saved.largeEndTime);
-                    return {
-                        stage: stages.length,
-                        endTime: 0,
-                        active: false,
-                        completed: true
-                    };
-                }
-                
-                const nextEndDate = getEndDateForStage(stages[currentStage].days);
-                currentEndTime = nextEndDate.getTime();
-            }
-            
-            saveState(currentStage, currentEndTime, true, false, saved.largeCompleted, saved.largeEndTime);
-            
-            return {
-                stage: currentStage,
-                endTime: currentEndTime,
-                active: true,
-                completed: false
-            };
         }
         
         // =============================================
         // ИНИЦИАЛИЗАЦИЯ
         // =============================================
-        let currentStage, timerActive, endDateSmall, timerCompleted;
         let largeTimerCompleted = false;
         let endDateLarge;
         
-        const saved = loadState();
+        const savedLargeCompleted = localStorage.getItem('largeTimerCompleted');
+        const savedLargeEndTime = localStorage.getItem('largeTimerEndTime');
         
-        if (saved.largeCompleted) {
+        if (savedLargeCompleted === 'true') {
             largeTimerCompleted = true;
             endDateLarge = null;
-        } else if (saved.largeEndTime) {
-            endDateLarge = new Date(saved.largeEndTime);
-            if (Date.now() >= saved.largeEndTime) {
+        } else if (savedLargeEndTime) {
+            endDateLarge = new Date(parseInt(savedLargeEndTime));
+            if (Date.now() >= parseInt(savedLargeEndTime)) {
                 downloadFile(
-                    'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/2/Null.null',
+                    'https://raw.githubusercontent.com/EG-3310/------Project/refs/heads/main/content/rar/Null.null',
                     'Null.null'
                 );
-                
                 largeTimerCompleted = true;
                 endDateLarge = null;
-                saveState(
-                    saved.stage, 
-                    saved.endTime, 
-                    saved.active, 
-                    saved.completed, 
-                    largeTimerCompleted, 
-                    null
-                );
+                localStorage.setItem('largeTimerCompleted', 'true');
+                localStorage.removeItem('largeTimerEndTime');
             }
         } else {
             endDateLarge = getEndDateLarge();
-            saveState(
-                saved.stage, 
-                saved.endTime, 
-                saved.active, 
-                saved.completed, 
-                false, 
-                endDateLarge.getTime()
-            );
+            localStorage.setItem('largeTimerEndTime', endDateLarge.getTime().toString());
         }
         
-        const processedState = processStagesFromStorage();
-        
-        if (processedState) {
-            currentStage = processedState.stage;
-            timerActive = processedState.active;
-            timerCompleted = processedState.completed;
-            endDateSmall = processedState.active ? new Date(processedState.endTime) : null;
-        } else {
-            currentStage = 0;
-            timerActive = true;
-            timerCompleted = false;
-            endDateSmall = getEndDateForStage(stages[0].days);
-            saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
-        }
-        
-        function goToNextStage() {
-            const stage = stages[currentStage];
-            downloadFile(stage.url, stage.filename);
-            
-            currentStage++;
-            
-            if (currentStage >= stages.length) {
-                timerActive = false;
-                timerCompleted = true;
-                endDateSmall = null;
-                saveState(stages.length, 0, false, true, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
-                return;
-            }
-            
-            endDateSmall = getEndDateForStage(stages[currentStage].days);
-            saveState(currentStage, endDateSmall.getTime(), timerActive, false, largeTimerCompleted, endDateLarge ? endDateLarge.getTime() : null);
-        }
+        // Нижний таймер всегда показывает 00:00:00
+        document.getElementById('countdown-small').innerHTML = `
+            <div class="unit"><div class="value-small">00</div></div>
+            <div class="separator-small">:</div>
+            <div class="unit"><div class="value-small">00</div></div>
+            <div class="separator-small">:</div>
+            <div class="unit"><div class="value-small">00</div></div>
+            <div class="separator-small">:</div>
+            <div class="unit"><div class="value-small">00</div></div>
+        `;
         
         function updateCountdownLarge() {
             if (largeTimerCompleted) {
@@ -353,14 +192,8 @@
                 
                 largeTimerCompleted = true;
                 endDateLarge = null;
-                saveState(
-                    currentStage, 
-                    endDateSmall ? endDateSmall.getTime() : null, 
-                    timerActive, 
-                    timerCompleted, 
-                    true, 
-                    null
-                );
+                localStorage.setItem('largeTimerCompleted', 'true');
+                localStorage.removeItem('largeTimerEndTime');
                 
                 document.getElementById('countdown-large').innerHTML = `
                     <div class="unit"><div class="value-large">00</div></div>
@@ -392,62 +225,6 @@
             `;
         }
         
-        function updateCountdownSmall() {
-            if (!timerActive || timerCompleted) {
-                document.getElementById('countdown-small').innerHTML = `
-                    <div class="unit"><div class="value-small">00</div></div>
-                    <div class="separator-small">:</div>
-                    <div class="unit"><div class="value-small">00</div></div>
-                    <div class="separator-small">:</div>
-                    <div class="unit"><div class="value-small">00</div></div>
-                    <div class="separator-small">:</div>
-                    <div class="unit"><div class="value-small">00</div></div>
-                `;
-                return;
-            }
-            
-            const now = new Date();
-            const timeLeft = endDateSmall - now;
-            
-            if (timeLeft <= 0) {
-                goToNextStage();
-                
-                document.getElementById('countdown-small').innerHTML = `
-                    <div class="unit"><div class="value-small">00</div></div>
-                    <div class="separator-small">:</div>
-                    <div class="unit"><div class="value-small">00</div></div>
-                    <div class="separator-small">:</div>
-                    <div class="unit"><div class="value-small">00</div></div>
-                    <div class="separator-small">:</div>
-                    <div class="unit"><div class="value-small">00</div></div>
-                `;
-                return;
-            }
-            
-            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-            
-            document.getElementById('countdown-small').innerHTML = `
-                <div class="unit">
-                    <div class="value-small">${days.toString().padStart(2, '0')}</div>
-                </div>
-                <div class="separator-small">:</div>
-                <div class="unit">
-                    <div class="value-small">${hours.toString().padStart(2, '0')}</div>
-                </div>
-                <div class="separator-small">:</div>
-                <div class="unit">
-                    <div class="value-small">${minutes.toString().padStart(2, '0')}</div>
-                </div>
-                <div class="separator-small">:</div>
-                <div class="unit">
-                    <div class="value-small">${seconds.toString().padStart(2, '0')}</div>
-                </div>
-            `;
-        }
-        
         function downloadFile(url, filename) {
             fetch(url)
                 .then(response => {
@@ -471,11 +248,9 @@
         
         setInterval(() => {
             updateCountdownLarge();
-            updateCountdownSmall();
         }, 1000);
         
         updateCountdownLarge();
-        updateCountdownSmall();
     </script>
 </body>
 </html>
